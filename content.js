@@ -23,6 +23,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         createWidget(request.image, img.width, img.height);
       };
       img.src = request.image;
+    }
+  });
+
+  function cropImage(dataUrl, area, dpr) {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
       canvas.width = area.width;
