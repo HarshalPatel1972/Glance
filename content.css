@@ -77,22 +77,33 @@
 .glance-widget {
   position: fixed;
   z-index: 2147483647; /* Maximum z-index */
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: var(--glance-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glance-border);
+  box-shadow: var(--shadow-widget);
   overflow: visible;
   box-sizing: border-box;
-  animation: glance-widget-enter 0.3s ease-out;
+  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth), transform var(--transition-fast);
+}
+
+.glance-widget:hover {
+  border-color: var(--glance-border-hover);
+  box-shadow: var(--shadow-widget), var(--shadow-accent);
+}
+
+.glance-widget.glance-dragging {
+  box-shadow: var(--shadow-widget), var(--shadow-accent);
 }
 
 .glance-resize-handle {
   position: absolute;
-  width: 8px;
-  height: 8px;
-  background: white;
-  border: 1px solid #333;
+  width: 10px;
+  height: 10px;
+  background: var(--glance-accent);
+  border-radius: 3px;
+  box-shadow: 0 0 6px var(--glance-accent-glow);
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-fast);
   z-index: 3;
 }
 
@@ -100,14 +111,19 @@
   opacity: 1;
 }
 
-.glance-resize-nw { top: -4px; left: -4px; cursor: nwse-resize; }
-.glance-resize-n  { top: -4px; left: calc(50% - 4px); cursor: ns-resize; }
-.glance-resize-ne { top: -4px; right: -4px; cursor: nesw-resize; }
-.glance-resize-e  { top: calc(50% - 4px); right: -4px; cursor: ew-resize; }
-.glance-resize-se { bottom: -4px; right: -4px; cursor: nwse-resize; }
-.glance-resize-s  { bottom: -4px; left: calc(50% - 4px); cursor: ns-resize; }
-.glance-resize-sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
-.glance-resize-w  { top: calc(50% - 4px); left: -4px; cursor: ew-resize; }
+.glance-resize-nw, .glance-resize-ne, .glance-resize-se, .glance-resize-sw {
+  width: 12px;
+  height: 12px;
+}
+
+.glance-resize-nw { top: -5px; left: -5px; cursor: nwse-resize; }
+.glance-resize-n  { top: -5px; left: calc(50% - 5px); cursor: ns-resize; }
+.glance-resize-ne { top: -5px; right: -5px; cursor: nesw-resize; }
+.glance-resize-e  { top: calc(50% - 5px); right: -5px; cursor: ew-resize; }
+.glance-resize-se { bottom: -5px; right: -5px; cursor: nwse-resize; }
+.glance-resize-s  { bottom: -5px; left: calc(50% - 5px); cursor: ns-resize; }
+.glance-resize-sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.glance-resize-w  { top: calc(50% - 5px); left: -5px; cursor: ew-resize; }
 
 @keyframes glance-widget-enter {
   0% {
@@ -122,44 +138,138 @@
 
 .glance-widget-toolbar {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
   display: flex;
-  gap: 4px;
-  opacity: 0;
-  transition: opacity 0.2s;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: var(--glance-glass);
+  border-bottom: 1px solid var(--glance-glass-border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  backdrop-filter: blur(20px) saturate(180%);
   z-index: 2;
   align-items: center;
 }
 
+.glance-toolbar-left,
+.glance-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.glance-widget-actionbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 36px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  background: rgba(26, 26, 31, 0.8);
+  border-bottom: 1px solid var(--glance-glass-border);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+  z-index: 2;
+}
+
+.glance-widget:hover .glance-widget-actionbar {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.glance-snip-title {
+  font-family: var(--font-ui);
+  color: var(--glance-text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 70px;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glance-snip-title:focus {
+  outline: none;
+  color: var(--glance-accent-hover);
+}
+
 .glance-opacity-slider {
-  width: 60px;
+  width: 68px;
   margin-right: 4px;
   cursor: pointer;
 }
 
-.glance-widget:hover .glance-widget-toolbar {
-  opacity: 1;
-}
-
 .glance-btn {
-  background: #1a1a1a;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  width: 24px;
-  height: 24px;
+  background: transparent;
+  color: var(--glance-text-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-family: sans-serif;
-  font-size: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  transition: background var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast), color var(--transition-fast);
 }
 
 .glance-btn:hover {
-  background: #333;
+  background: rgba(255,255,255,0.08);
+  color: var(--glance-text-primary);
+}
+
+.glance-btn:active {
+  background: rgba(255,255,255,0.14);
+  transform: scale(0.94);
+}
+
+.glance-close-btn:hover {
+  color: var(--glance-danger);
+}
+
+.glance-drag-handle {
+  cursor: grab;
+}
+
+.glance-widget.glance-dragging .glance-drag-handle {
+  cursor: grabbing;
+}
+
+.glance-icon {
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.glance-widget-actionbar .glance-btn {
+  width: 24px;
+  height: 24px;
+}
+
+.glance-widget-actionbar .glance-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.glance-success-state {
+  color: var(--glance-success);
+}
+
+.glance-bounce {
+  animation: glance-save-bounce 260ms ease-out;
+}
+
+@keyframes glance-save-bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
 .glance-widget-img {
@@ -168,7 +278,9 @@
   display: block;
   user-select: none;
   pointer-events: none;
-  border-radius: 10px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding-top: 36px;
+  background: var(--glance-bg);
   object-fit: contain;
 }
 

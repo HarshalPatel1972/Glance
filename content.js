@@ -46,6 +46,22 @@ if (!document.getElementById('glance-init-flag')) {
   
   const isSnipping = () => document.documentElement.dataset.glanceSnipping === '1';
   const setSnipping = (v) => { document.documentElement.dataset.glanceSnipping = v ? '1' : '0'; };
+  const ICONS = {
+    grip: '<circle cx="6" cy="7" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="18" cy="7" r="1"></circle><circle cx="6" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="18" cy="12" r="1"></circle>',
+    minimize: '<path d="M5 12h14"></path>',
+    maximize: '<rect x="5" y="5" width="14" height="14" rx="2"></rect>',
+    close: '<path d="M6 6l12 12"></path><path d="M18 6L6 18"></path>',
+    pen: '<path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>',
+    text: '<path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path>',
+    copy: '<rect x="9" y="9" width="10" height="10" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path>',
+    download: '<path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path>',
+    save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path>',
+    frame: '<rect x="4" y="4" width="16" height="16" rx="2"></rect>',
+    share: '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"></path><path d="M12 16V3"></path><path d="m7 8 5-5 5 5"></path>',
+    video: '<polygon points="10 8 16 12 10 16 10 8"></polygon><rect x="3" y="5" width="18" height="14" rx="2"></rect>',
+    check: '<path d="M20 6 9 17l-5-5"></path>'
+  };
+  const icon = (name) => `<svg class="glance-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
   let overlayContent = null;
   let selectionBox = null;
   
@@ -168,12 +184,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const toolbar = document.createElement("div");
     toolbar.className = "glance-widget-toolbar";
-    
-    const snipBadge = document.createElement("span");
-    snipBadge.className = "glance-snip-badge";
-    if(snipNumber) {
-        snipBadge.textContent = `#${snipNumber}`;
-    }
+    const toolbarLeft = document.createElement("div");
+    toolbarLeft.className = "glance-toolbar-left";
+    const toolbarRight = document.createElement("div");
+    toolbarRight.className = "glance-toolbar-right";
+
+    const dragHandle = document.createElement("button");
+    dragHandle.className = "glance-btn glance-drag-handle";
+    dragHandle.innerHTML = icon('grip');
+    dragHandle.title = "Drag";
+
+    const titleEl = document.createElement("span");
+    titleEl.className = "glance-snip-title";
+    titleEl.contentEditable = "true";
+    titleEl.spellcheck = false;
+    titleEl.textContent = snipNumber ? `#${snipNumber} Snip` : "Snip";
 
     let isDrawingMode = false;
     let isPainting = false;
@@ -183,7 +208,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const drawBtn = document.createElement('button');
     drawBtn.className = 'glance-btn glance-draw-btn';
-    drawBtn.innerHTML = '✏️';
+    drawBtn.innerHTML = icon('pen');
     drawBtn.title = 'Draw';
     
     const colorPicker = document.createElement('input');
@@ -217,7 +242,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const textBtn = document.createElement('button');
     textBtn.className = 'glance-btn glance-text-btn';
-    textBtn.innerHTML = 'T';
+    textBtn.innerHTML = icon('text');
     textBtn.title = 'Add Text';
     textBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -237,7 +262,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const reframeBtn = document.createElement('button');
     reframeBtn.className = 'glance-btn glance-reframe-btn';
-    reframeBtn.innerHTML = '⛶';
+    reframeBtn.innerHTML = icon('frame');
     reframeBtn.title = 'Reframe';
     let isReframeMode = true;
     reframeBtn.addEventListener('click', (e) => {
@@ -254,7 +279,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const copyBtn = document.createElement("button");
     copyBtn.className = "glance-btn glance-copy-btn";
-    copyBtn.innerHTML = "📋";
+    copyBtn.innerHTML = icon('copy');
     copyBtn.title = "Copy to Clipboard";
     copyBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
@@ -262,8 +287,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const res = await fetch(image);
         const blob = await res.blob();
         await navigator.clipboard.write([new ClipboardItem({[blob.type]: blob})]);
-        copyBtn.innerHTML = "✓";
-        setTimeout(() => copyBtn.innerHTML = "📋", 1500);
+        copyBtn.innerHTML = icon('check');
+        copyBtn.classList.add('glance-success-state');
+        setTimeout(() => {
+          copyBtn.innerHTML = icon('copy');
+          copyBtn.classList.remove('glance-success-state');
+        }, 1500);
       } catch (err) {
         console.error("Copy failed", err);
       }
@@ -271,7 +300,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const downloadBtn = document.createElement("button");
     downloadBtn.className = "glance-btn glance-download-btn";
-    downloadBtn.innerHTML = "⬇";
+    downloadBtn.innerHTML = icon('download');
     downloadBtn.title = "Download Snip";
     downloadBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -279,8 +308,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       a.href = image;
       a.download = `snip_${Date.now()}.png`;
       a.click();
-      downloadBtn.innerHTML = "✓";
-      setTimeout(() => downloadBtn.innerHTML = "⬇", 1500);
+      downloadBtn.innerHTML = icon('check');
+      setTimeout(() => downloadBtn.innerHTML = icon('download'), 1500);
     });
 
     const opacitySlider = document.createElement("input");
@@ -301,18 +330,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const saveBtn = document.createElement("button");
     saveBtn.className = "glance-btn glance-save-btn";
-    saveBtn.innerHTML = "🔖";
+    saveBtn.innerHTML = icon('save');
     saveBtn.title = "Save Snip";
     saveBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       saveSnip(image);
-      saveBtn.innerHTML = "✓";
-      setTimeout(() => saveBtn.innerHTML = "🔖", 1500);
+      saveBtn.innerHTML = icon('check');
+      saveBtn.classList.add('glance-bounce');
+      setTimeout(() => {
+        saveBtn.innerHTML = icon('save');
+        saveBtn.classList.remove('glance-bounce');
+      }, 1500);
     });
+
+    const minBtn = document.createElement("button");
+    minBtn.className = "glance-btn glance-min-btn";
+    minBtn.innerHTML = icon('minimize');
+    minBtn.title = "Minimize";
+
+    const expandBtn = document.createElement("button");
+    expandBtn.className = "glance-btn glance-expand-btn";
+    expandBtn.innerHTML = icon('maximize');
+    expandBtn.title = "Expand";
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "glance-btn glance-close-btn";
-    closeBtn.innerHTML = "✕";
+    closeBtn.innerHTML = icon('close');
     closeBtn.title = "Close plugin";
     closeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -328,19 +371,38 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       widget.remove();
     });
 
-    if(snipNumber) {
-        toolbar.appendChild(snipBadge);
-    }
-    toolbar.appendChild(drawBtn);
-    toolbar.appendChild(colorPicker);
-    toolbar.appendChild(textBtn);
-    toolbar.appendChild(reframeBtn);
-    toolbar.appendChild(copyBtn);
-toolbar.appendChild(downloadBtn);
-toolbar.appendChild(opacitySlider);
-    toolbar.appendChild(saveBtn);
-    toolbar.appendChild(closeBtn);
+    const actionBar = document.createElement("div");
+    actionBar.className = "glance-widget-actionbar";
+    const shareBtn = document.createElement("button");
+    shareBtn.className = "glance-btn glance-share-btn";
+    shareBtn.innerHTML = icon('share');
+    shareBtn.title = "Share";
+    const videoBtn = document.createElement("button");
+    videoBtn.className = "glance-btn glance-video-btn";
+    videoBtn.innerHTML = icon('video');
+    videoBtn.title = "Video Frame";
+
+    toolbarLeft.appendChild(dragHandle);
+    toolbarLeft.appendChild(titleEl);
+    toolbarRight.appendChild(minBtn);
+    toolbarRight.appendChild(expandBtn);
+    toolbarRight.appendChild(closeBtn);
+    toolbar.appendChild(toolbarLeft);
+    toolbar.appendChild(toolbarRight);
+
+    actionBar.appendChild(drawBtn);
+    actionBar.appendChild(textBtn);
+    actionBar.appendChild(copyBtn);
+    actionBar.appendChild(shareBtn);
+    actionBar.appendChild(videoBtn);
+    actionBar.appendChild(downloadBtn);
+    actionBar.appendChild(reframeBtn);
+    actionBar.appendChild(saveBtn);
+    actionBar.appendChild(opacitySlider);
+    actionBar.appendChild(colorPicker);
+
     widget.appendChild(toolbar);
+    widget.appendChild(actionBar);
 
     const imgElement = document.createElement("img");
     imgElement.className = "glance-widget-img";
@@ -455,8 +517,7 @@ toolbar.appendChild(opacitySlider);
 
     let isCollapsed = false;
     let previousHeight = height;
-    widget.addEventListener("dblclick", (e) => {
-      if(e.target.closest(".glance-btn") || e.target.closest(".glance-opacity-slider") || widget.classList.contains("drawing-mode")) return;
+    const toggleCollapsed = () => {
       isCollapsed = !isCollapsed;
       if(isCollapsed) {
         previousHeight = widget.style.height;
@@ -468,6 +529,23 @@ toolbar.appendChild(opacitySlider);
         imgElement.style.display = "block";
         canvas.style.display = "block";
       }
+    };
+
+    minBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleCollapsed();
+    });
+
+    expandBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (isCollapsed) {
+        toggleCollapsed();
+      }
+    });
+
+    widget.addEventListener("dblclick", (e) => {
+      if(e.target.closest(".glance-btn") || e.target.closest(".glance-opacity-slider") || widget.classList.contains("drawing-mode")) return;
+      toggleCollapsed();
     });
 
     // Assign ID to widget for session tracking
@@ -511,13 +589,15 @@ function saveWidgetState(widget) {
 
     element.addEventListener("mousedown", (e) => {
       // Prevent dragging if clicking on UI elements
-      if (e.target.closest('.glance-btn') || e.target.closest('.glance-resize-handle') || element.classList.contains('drawing-mode')) return;
+      const isDragHandle = e.target.closest('.glance-drag-handle');
+      if ((e.target.closest('.glance-btn') && !isDragHandle) || e.target.closest('.glance-resize-handle') || element.classList.contains('drawing-mode')) return;
 
       isDragging = true;
       startX = e.clientX;
       startY = e.clientY;
       initialLeft = parseFloat(element.style.left) || 0;
       initialTop = parseFloat(element.style.top) || 0;
+      element.classList.add('glance-dragging');
       
       e.stopPropagation();
       e.preventDefault();
@@ -534,6 +614,7 @@ function saveWidgetState(widget) {
     document.addEventListener("mouseup", () => {
       if (isDragging) {
         isDragging = false;
+        element.classList.remove('glance-dragging');
         saveWidgetState(element);
       }
     });
