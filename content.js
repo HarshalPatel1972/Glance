@@ -15,17 +15,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     DBG('Message received:', request.action);
     if (request.action === "activate_snip") {
       if (isSnipping) { DBG('Already snipping, ignoring'); return; }
-      
+      isSnipping = true;
+
       chrome.storage.session.get({ activeSnips: [] }, (result) => {
         DBG('Active snips count:', result.activeSnips.length);
         if (result.activeSnips.length >= 5) {
           showToast("Maximum 5 snips active. Close one to continue.");
           DBG('Snip limit reached');
+          isSnipping = false;
           return;
         }
-        isSnipping = true;
         DBG('Creating overlay...');
-        createOverlay();
+        try { createOverlay(); } catch(e) { console.error('[Glance CS] createOverlay error:', e); isSnipping = false; }
       });
     } else if (request.action === "crop_image") {
       cropImage(request.dataUrl, request.area, request.devicePixelRatio, request.reframeId);

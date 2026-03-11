@@ -28,11 +28,13 @@ chrome.commands.onCommand.addListener(async (command) => {
         files: ["content.css"]
       });
       
-      DBG('Injected content scripts OK, sending activate_snip');
-      chrome.tabs.sendMessage(tab.id, { action: "activate_snip" }, (r) => {
-        if (chrome.runtime.lastError) DBG('sendMessage activate_snip error:', chrome.runtime.lastError.message);
-        else DBG('activate_snip ack:', r);
-      });
+      DBG('Injecting done, waiting 150ms...');
+      setTimeout(() => {
+        chrome.tabs.sendMessage(tab.id, { action: 'activate_snip' }, (r) => {
+          if (chrome.runtime.lastError) DBG('activate_snip error:', chrome.runtime.lastError.message);
+          else DBG('activate_snip ack:', r);
+        });
+      }, 150);
     } catch (err) {
       console.error('[Glance BG] Failed to inject snip mode:', err);
     }
