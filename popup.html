@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+  <title>Glance</title>
+</head>
+<body>
+  <div class="header">
+    <div class="title">Glance</div>
+    <div class="controls">
+      <label class="switch" title="Toggle Extension">
+        <input type="checkbox" id="toggle-extension" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  
+  <div class="content">
+    <div class="section-header">
+      <span>Saved Snips</span>
+      <button id="clear-all" class="clear-btn">Clear All</button>
+    </div>
+    <div id="snips-container" class="snips-container">
+      <div id="empty-state" class="empty-state">No saved snips yet.</div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
