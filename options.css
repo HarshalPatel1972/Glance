@@ -1,0 +1,49 @@
+@import url('./design-system.css');
+
+body {
+  margin: 0;
+  padding: 20px;
+  max-width: 400px;
+  background: var(--glance-bg);
+  color: var(--glance-text-primary);
+  font-family: var(--font-ui);
+}
+
+h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+label {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--glance-text-secondary);
+}
+
+input[type="range"],
+input[type="number"] {
+  margin-top: 6px;
+}
+
+button {
+  padding: 8px 16px;
+  cursor: pointer;
+  background: var(--glance-accent);
+  color: var(--glance-text-primary);
+  border: 1px solid var(--glance-accent-hover);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+button:hover {
+  background: var(--glance-accent-hover);
+}
+
+button:active {
+  transform: scale(0.94);
+}
+
+a {
+  color: var(--glance-text-secondary);
+}
