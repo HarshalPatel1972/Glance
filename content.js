@@ -384,6 +384,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       widget.classList.add('glance-widget-exit');
       const removeWidget = () => {
         widget.removeEventListener('transitionend', removeWidget);
+        const thumb = document.querySelector(`.glance-widget-thumbnail[data-snip-id="${widget.dataset.snipId}"]`);
+        if (thumb) thumb.remove();
         widget.remove();
       };
       widget.addEventListener('transitionend', removeWidget);
@@ -544,15 +546,45 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     let isCollapsed = false;
     let previousHeight = height;
+    let minimizedThumb = null;
+    let previousLeft = widget.style.left;
+    let previousTop = widget.style.top;
     const toggleCollapsed = () => {
       isCollapsed = !isCollapsed;
       widget.classList.toggle('glance-collapsed', isCollapsed);
       if(isCollapsed) {
         previousHeight = widget.style.height;
+        previousLeft = widget.style.left;
+        previousTop = widget.style.top;
         minBtn.innerHTML = icon('maximize');
+        widget.classList.add('glance-minimized-hidden');
+        minimizedThumb = document.createElement('button');
+        minimizedThumb.className = 'glance-widget-thumbnail';
+        minimizedThumb.dataset.snipId = widget.dataset.snipId || '';
+        minimizedThumb.style.left = previousLeft;
+        minimizedThumb.style.top = previousTop;
+        minimizedThumb.style.backgroundImage = `url(${image})`;
+        minimizedThumb.innerHTML = `<span class="glance-thumb-dot"></span><span class="glance-thumb-tooltip">${titleEl.textContent} · Click to expand</span>`;
+        minimizedThumb.addEventListener('click', (e) => {
+          e.stopPropagation();
+          isCollapsed = false;
+          widget.classList.remove('glance-collapsed');
+          widget.classList.remove('glance-minimized-hidden');
+          widget.style.left = minimizedThumb.style.left;
+          widget.style.top = minimizedThumb.style.top;
+          minBtn.innerHTML = icon('minimize');
+          minimizedThumb.remove();
+          minimizedThumb = null;
+        });
+        document.body.appendChild(minimizedThumb);
       } else {
         widget.style.height = previousHeight;
         minBtn.innerHTML = icon('minimize');
+        widget.classList.remove('glance-minimized-hidden');
+        if (minimizedThumb) {
+          minimizedThumb.remove();
+          minimizedThumb = null;
+        }
       }
     };
 
