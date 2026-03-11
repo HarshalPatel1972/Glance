@@ -44,9 +44,10 @@
   background: white;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  overflow: visible; /* so toolbar goes slightly over or we clip appropriately */
+  overflow: hidden; /* Needed for CSS resize */
   box-sizing: border-box;
   animation: glance-widget-enter 0.3s ease-out;
+  resize: both;
 }
 
 @keyframes glance-widget-enter {
