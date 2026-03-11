@@ -1,19 +1,24 @@
-chrome.commands.onCommand.addListener((command) => {
+chrome.commands.onCommand.addListener(async (command) => {
   if (command === "trigger_snip") {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs.length > 0) {
-        chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id },
-          files: ["content.js"]
-        });
-        chrome.scripting.insertCSS({
-          target: { tabId: tabs[0].id },
-          files: ["content.css"]
-        });
-        // We'll send a message to the content script to activate snip mode
-        chrome.tabs.sendMessage(tabs[0].id, { action: "activate_snip" });
-      }
-    });
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab) return;
+      
+      // Inject the scripts and styles
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ["content.js"]
+      });
+      await chrome.scripting.insertCSS({
+        target: { tabId: tab.id },
+        files: ["content.css"]
+      });
+      
+      // We'll send a message to the content script to activate snip mode
+      chrome.tabs.sendMessage(tab.id, { action: "activate_snip" });
+    } catch (err) {
+      console.error("Failed to inject snip mode:", err);
+    }
   }
 });
 
