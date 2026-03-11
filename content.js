@@ -118,7 +118,84 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(snipNumber) {
         snipBadge.textContent = `#${snipNumber}`;
     }
+
+    let isDrawingMode = false;
+    let isPainting = false;
+    let lastX = 0, lastY = 0;
+    let currentColor = '#ff0000';
+    let isTextMode = false;
+
+    const drawBtn = document.createElement('button');
+    drawBtn.className = 'glance-btn glance-draw-btn';
+    drawBtn.innerHTML = '✏️';
+    drawBtn.title = 'Draw';
     
+    const colorPicker = document.createElement('input');
+    colorPicker.type = 'color';
+    colorPicker.value = '#ff0000';
+    colorPicker.className = 'glance-color-picker';
+    colorPicker.title = 'Pen Color';
+    colorPicker.style.display = 'none';
+
+    drawBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isDrawingMode = !isDrawingMode;
+      if (isDrawingMode) {
+        drawBtn.style.background = 'rgba(0,0,0,0.2)';
+        widget.classList.add('drawing-mode');
+        colorPicker.style.display = 'inline-block';
+        isTextMode = false;
+        textBtn.style.background = 'none';
+        widget.classList.remove('text-mode');
+      } else {
+        drawBtn.style.background = 'none';
+        widget.classList.remove('drawing-mode');
+        colorPicker.style.display = 'none';
+        saveWidgetState(widget);
+      }
+    });
+
+    colorPicker.addEventListener('input', (e) => {
+      currentColor = e.target.value;
+    });
+
+    const textBtn = document.createElement('button');
+    textBtn.className = 'glance-btn glance-text-btn';
+    textBtn.innerHTML = 'T';
+    textBtn.title = 'Add Text';
+    textBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isTextMode = !isTextMode;
+      if (isTextMode) {
+        textBtn.style.background = 'rgba(0,0,0,0.2)';
+        widget.classList.add('text-mode');
+        isDrawingMode = false;
+        drawBtn.style.background = 'none';
+        widget.classList.remove('drawing-mode');
+        colorPicker.style.display = 'none';
+      } else {
+        textBtn.style.background = 'none';
+        widget.classList.remove('text-mode');
+      }
+    });
+
+    const reframeBtn = document.createElement('button');
+    reframeBtn.className = 'glance-btn glance-reframe-btn';
+    reframeBtn.innerHTML = '⛶';
+    reframeBtn.title = 'Reframe';
+    let isReframeMode = true;
+    reframeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isReframeMode = !isReframeMode;
+      if (isReframeMode) {
+        widget.classList.remove('no-reframe');
+        reframeBtn.style.background = 'none';
+      } else {
+        widget.classList.add('no-reframe');
+        reframeBtn.style.background = 'rgba(0,0,0,0.2)';
+      }
+    });
+
     const copyBtn = document.createElement("button");
     copyBtn.className = "glance-btn glance-copy-btn";
     copyBtn.innerHTML = "📋";
@@ -197,6 +274,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(snipNumber) {
         toolbar.appendChild(snipBadge);
     }
+    toolbar.appendChild(drawBtn);
+    toolbar.appendChild(colorPicker);
+    toolbar.appendChild(textBtn);
+    toolbar.appendChild(reframeBtn);
     toolbar.appendChild(copyBtn);
 toolbar.appendChild(downloadBtn);
 toolbar.appendChild(opacitySlider);
