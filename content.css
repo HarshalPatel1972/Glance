@@ -70,6 +70,13 @@
   opacity: 0;
   transition: opacity 0.2s;
   z-index: 2;
+  align-items: center;
+}
+
+.glance-opacity-slider {
+  width: 60px;
+  margin-right: 4px;
+  cursor: pointer;
 }
 
 .glance-widget:hover .glance-widget-toolbar {

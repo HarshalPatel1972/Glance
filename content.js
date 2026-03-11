@@ -58,6 +58,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const toolbar = document.createElement("div");
     toolbar.className = "glance-widget-toolbar";
+    
+    const opacitySlider = document.createElement("input");
+    opacitySlider.type = "range";
+    opacitySlider.min = "0.1";
+    opacitySlider.max = "1";
+    opacitySlider.step = "0.1";
+    opacitySlider.value = "1";
+    opacitySlider.className = "glance-opacity-slider";
+    opacitySlider.title = "Adjust Opacity";
+    opacitySlider.addEventListener("input", (e) => {
+      widget.style.opacity = e.target.value;
+    });
+    // Prevent dragging when using slider
+    opacitySlider.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+    });
 
     const saveBtn = document.createElement("button");
     saveBtn.className = "glance-btn glance-save-btn";
