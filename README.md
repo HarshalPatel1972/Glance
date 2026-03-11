@@ -38,3 +38,7 @@ When working in a browser, users often need to reference something on screen whi
 ## License
 
 MIT License.
+
+## Privacy
+
+See [PRIVACY.md](PRIVACY.md) for data handling details.

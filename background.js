@@ -1,5 +1,43 @@
 const DBG = (...a) => console.log('[Glance BG]', ...a);
 
+const isRestrictedUrl = (url) => !url || url.startsWith("chrome://") || url.startsWith("edge://") || url.startsWith("about:");
+
+function sendToTab(tabId, message) {
+  return new Promise((resolve) => {
+    chrome.tabs.sendMessage(tabId, message, (response) => {
+      if (chrome.runtime.lastError) {
+        resolve({ ok: false, error: chrome.runtime.lastError.message });
+        return;
+      }
+      resolve({ ok: true, response });
+    });
+  });
+}
+
+async function ensureInjected(tabId) {
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    files: ["content.js"]
+  });
+  await chrome.scripting.insertCSS({
+    target: { tabId },
+    files: ["content.css"]
+  });
+}
+
+async function sendWithInjection(tabId, message) {
+  let result = await sendToTab(tabId, message);
+  if (result.ok) return result;
+
+  const missingReceiver = result.error && result.error.includes('Receiving end does not exist');
+  if (!missingReceiver) return result;
+
+  await ensureInjected(tabId);
+  await new Promise((r) => setTimeout(r, 120));
+  result = await sendToTab(tabId, message);
+  return result;
+}
+
 chrome.runtime.onStartup.addListener(() => {
   DBG('onStartup fired');
   chrome.storage.local.get({ savedSnips: [], snipExpirationDays: 7 }, (res) => {
@@ -16,25 +54,11 @@ chrome.commands.onCommand.addListener(async (command) => {
   if (command === "trigger_snip") {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab || !tab.url || tab.url.startsWith("chrome://") || tab.url.startsWith("edge://") || tab.url.startsWith("about:")) return;
-      
-      // Inject the scripts and styles
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ["content.js"]
-      });
-      await chrome.scripting.insertCSS({
-        target: { tabId: tab.id },
-        files: ["content.css"]
-      });
-      
-      DBG('Injecting done, waiting 150ms...');
-      setTimeout(() => {
-        chrome.tabs.sendMessage(tab.id, { action: 'activate_snip' }, (r) => {
-          if (chrome.runtime.lastError) DBG('activate_snip error:', chrome.runtime.lastError.message);
-          else DBG('activate_snip ack:', r);
-        });
-      }, 150);
+      if (!tab || isRestrictedUrl(tab.url)) return;
+
+      const result = await sendWithInjection(tab.id, { action: 'activate_snip' });
+      if (!result.ok) DBG('activate_snip error:', result.error);
+      else DBG('activate_snip ack:', result.response);
     } catch (err) {
       console.error('[Glance BG] Failed to inject snip mode:', err);
     }
@@ -101,23 +125,11 @@ async function injectAndRestore(tabId) {
   DBG('injectAndRestore tabId:', tabId);
   try {
     const tab = await chrome.tabs.get(tabId);
-    if (!tab.url || tab.url.startsWith("chrome://") || tab.url.startsWith("edge://") || tab.url.startsWith("about:")) return;
+    if (isRestrictedUrl(tab.url)) return;
 
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ["content.js"]
-    });
-    await chrome.scripting.insertCSS({
-      target: { tabId: tab.id },
-      files: ["content.css"]
-    });
-
-    setTimeout(() => {
-      chrome.tabs.sendMessage(tab.id, { action: "restore_snips" }, (r) => {
-        if (chrome.runtime.lastError) DBG('restore_snips msg error:', chrome.runtime.lastError.message);
-        else DBG('restore_snips ack:', r);
-      });
-    }, 150);
+    const result = await sendWithInjection(tab.id, { action: "restore_snips" });
+    if (!result.ok) DBG('restore_snips msg error:', result.error);
+    else DBG('restore_snips ack:', result.response);
   } catch (e) {
     DBG('injectAndRestore skipped/error:', e.message);
   }
