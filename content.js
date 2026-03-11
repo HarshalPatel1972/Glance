@@ -23,6 +23,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     } else if (request.action === "crop_image") {
       cropImage(request.dataUrl, request.area, request.devicePixelRatio);
+    } else if (request.action === "restore_snips") {
+      chrome.storage.session.get({ activeSnips: [] }, (result) => {
+        result.activeSnips.forEach(snip => {
+          if (!document.querySelector(`.glance-widget[data-snip-id="${snip.id}"]`)) {
+            createWidget({
+              image: snip.image,
+              width: parseFloat(snip.width),
+              height: parseFloat(snip.height),
+              id: snip.id,
+              left: snip.left,
+              top: snip.top,
+              snipNumber: snip.snipNumber
+            });
+          }
+        });
+      });
     } else if (request.action === "inject_snip") {
       // Re-inject saved snip
       const img = new Image();
@@ -166,7 +182,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     makeResizable(widget);
 
     // Assign ID to widget for session tracking
-    widget.dataset.snipId = id || (Date.now().toString() + Math.random().toString(36).substr(2, 5));
+    widget.dataset.snipId = id || (Date.now().toString() + Math.random().toString(36).substr(2, 5)); widget.dataset.image = image; if (snipNumber) widget.dataset.snipNumber = snipNumber;
     saveWidgetState(widget);
   }
 function saveWidgetState(widget) {
@@ -176,7 +192,9 @@ function saveWidgetState(widget) {
       left: widget.style.left,
       top: widget.style.top,
       width: widget.style.width,
-      height: widget.style.height
+      height: widget.style.height,
+        image: widget.dataset.image,
+        snipNumber: widget.dataset.snipNumber
     };
     
     // We'll wait to fully build out the session storage logic in Feature 3,

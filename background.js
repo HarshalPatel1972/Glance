@@ -37,3 +37,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => { if(request.action === "update_badge") { if(request.count > 0) { chrome.action.setBadgeText({text: request.count.toString()}); chrome.action.setBadgeBackgroundColor({color: "#4688F1"}); } else { chrome.action.setBadgeText({text: ""}); } } });
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  injectAndRestore(activeInfo.tabId);
+});
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.active) {
+    injectAndRestore(tabId);
+  }
+});
+
+async function injectAndRestore(tabId) {
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    if (!tab.url || tab.url.startsWith("chrome://") || tab.url.startsWith("edge://") || tab.url.startsWith("about:")) return;
+
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["content.js"]
+    });
+    await chrome.scripting.insertCSS({
+      target: { tabId: tab.id },
+      files: ["content.css"]
+    });
+
+    chrome.tabs.sendMessage(tab.id, { action: "restore_snips" });
+  } catch (e) {
+    // Ignore errors for uninjectable tabs
+  }
+}
