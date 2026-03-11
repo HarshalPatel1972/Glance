@@ -1,3 +1,43 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Initialization logic for popup
+  const container = document.getElementById("snips-container");
+  const emptyState = document.getElementById("empty-state");
+
+  function loadSnips() {
+    chrome.storage.local.get({ savedSnips: [] }, (result) => {
+      const snips = result.savedSnips;
+      if (snips.length > 0) {
+        emptyState.style.display = "none";
+        renderSnips(snips);
+      } else {
+        emptyState.style.display = "block";
+      }
+    });
+  }
+
+  function renderSnips(snips) {
+    // Keep empty state, remove others
+    container.innerHTML = "";
+    container.appendChild(emptyState);
+
+    snips.forEach(snip => {
+      const item = document.createElement("div");
+      item.className = "snip-item";
+
+      const img = document.createElement("img");
+      img.src = snip.image;
+      img.className = "snip-thumb";
+
+      const info = document.createElement("div");
+      info.className = "snip-info";
+      const date = new Date(snip.timestamp).toLocaleString();
+      info.innerText = date;
+
+      item.appendChild(img);
+      item.appendChild(info);
+
+      container.appendChild(item);
+    });
+  }
+
+  loadSnips();
 });
