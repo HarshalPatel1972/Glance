@@ -62,4 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   loadSnips();
+
+  const clearBtn = document.getElementById("clear-all");
+  clearBtn.addEventListener("click", () => {
+    chrome.storage.local.set({ savedSnips: [] }, () => {
+      loadSnips();
+    });
+  });
 });
