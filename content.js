@@ -62,6 +62,41 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     widget.appendChild(img);
 
     document.body.appendChild(widget);
+    
+    makeDraggable(widget);
+  }
+
+  function makeDraggable(element) {
+    let isDragging = false;
+    let startX, startY;
+    let initialLeft, initialTop;
+
+    element.addEventListener("mousedown", (e) => {
+      // Prevent dragging if clicking on interactive elements inside widget later
+      if (e.target.closest('.glance-btn')) return;
+
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      initialLeft = parseFloat(element.style.left) || 0;
+      initialTop = parseFloat(element.style.top) || 0;
+      
+      // Stop events from bubbling
+      e.stopPropagation();
+      e.preventDefault();
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      element.style.left = (initialLeft + dx) + "px";
+      element.style.top = (initialTop + dy) + "px";
+    });
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
   }
 
   function createOverlay() {
