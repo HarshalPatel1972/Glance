@@ -85,6 +85,20 @@
   box-sizing: border-box;
   transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth), transform var(--transition-fast);
 }
+.glance-widget.glance-widget-entering {
+  opacity: 0;
+  transform: scale(0.6) translateY(20px);
+}
+.glance-widget.glance-widget-ready {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition: transform var(--transition-spring), opacity var(--transition-spring), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+}
+.glance-widget.glance-widget-exit {
+  opacity: 0;
+  transform: scale(0.85) translateY(8px);
+  transition: opacity 150ms ease-in, transform 150ms ease-in;
+}
 
 .glance-widget:hover {
   border-color: var(--glance-border-hover);
@@ -279,7 +293,6 @@
   user-select: none;
   pointer-events: none;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  padding-top: 36px;
   background: var(--glance-bg);
   object-fit: contain;
 }
@@ -319,4 +332,24 @@
 .glance-widget.text-mode .glance-widget-canvas {
   pointer-events: auto;
   cursor: text;
+}
+.glance-title-hidden {
+  opacity: 0;
+  transform: translateY(3px);
+}
+.glance-snip-title:not(.glance-title-hidden) {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+.glance-widget-body {
+  position: relative;
+  margin-top: 36px;
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 200ms ease-out, opacity 200ms ease-out;
+}
+.glance-widget.glance-collapsed .glance-widget-body {
+  max-height: 0;
+  opacity: 0;
 }

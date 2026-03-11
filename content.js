@@ -173,7 +173,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     function createWidget({ image, width, height, id, left, top, snipNumber, drawing, notes }) {
     const widget = document.createElement("div");
-    widget.className = "glance-widget";
+    widget.className = "glance-widget glance-widget-entering";
     widget.style.width = width + "px";
     widget.style.height = height + "px";
     
@@ -195,7 +195,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     dragHandle.title = "Drag";
 
     const titleEl = document.createElement("span");
-    titleEl.className = "glance-snip-title";
+    titleEl.className = "glance-snip-title glance-title-hidden";
     titleEl.contentEditable = "true";
     titleEl.spellcheck = false;
     titleEl.textContent = snipNumber ? `#${snipNumber} Snip` : "Snip";
@@ -368,7 +368,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       });
 
-      widget.remove();
+      widget.classList.add('glance-widget-exit');
+      const removeWidget = () => {
+        widget.removeEventListener('transitionend', removeWidget);
+        widget.remove();
+      };
+      widget.addEventListener('transitionend', removeWidget);
     });
 
     const actionBar = document.createElement("div");
@@ -404,16 +409,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     widget.appendChild(toolbar);
     widget.appendChild(actionBar);
 
+    const body = document.createElement("div");
+    body.className = "glance-widget-body";
+
     const imgElement = document.createElement("img");
     imgElement.className = "glance-widget-img";
     imgElement.src = image;
-    widget.appendChild(imgElement);
+    body.appendChild(imgElement);
 
     const canvas = document.createElement("canvas");
     canvas.className = "glance-widget-canvas";
     canvas.width = width;
     canvas.height = height;
-    widget.appendChild(canvas);
+    body.appendChild(canvas);
+    widget.appendChild(body);
     
     const ctx = canvas.getContext('2d');
     ctx.lineCap = 'round';
@@ -507,6 +516,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 
     document.body.appendChild(widget);
+    requestAnimationFrame(() => {
+      widget.classList.remove('glance-widget-entering');
+      widget.classList.add('glance-widget-ready');
+      setTimeout(() => titleEl.classList.remove('glance-title-hidden'), 80);
+    });
 
     if(drawing) { const dimg = new Image(); dimg.onload = () => ctx.drawImage(dimg, 0, 0); dimg.src = drawing; }
 
@@ -519,15 +533,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     let previousHeight = height;
     const toggleCollapsed = () => {
       isCollapsed = !isCollapsed;
+      widget.classList.toggle('glance-collapsed', isCollapsed);
       if(isCollapsed) {
         previousHeight = widget.style.height;
-        widget.style.height = "36px";
-        imgElement.style.display = "none";
-        canvas.style.display = "none";
+        minBtn.innerHTML = icon('maximize');
       } else {
         widget.style.height = previousHeight;
-        imgElement.style.display = "block";
-        canvas.style.display = "block";
+        minBtn.innerHTML = icon('minimize');
       }
     };
 
