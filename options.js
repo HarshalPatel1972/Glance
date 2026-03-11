@@ -1,4 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
+  function showOptionsToast(message) {
+    let toast = document.getElementById('options-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'options-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
   chrome.storage.sync.get({ defaultOpacity: 1, snipExpirationDays: 7 }, (res) => {
     document.getElementById('default-opacity').value = res.defaultOpacity;
     document.getElementById('opacity-val').innerText = Math.round(res.defaultOpacity * 100) + '%';
@@ -14,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
       defaultOpacity: parseFloat(document.getElementById('default-opacity').value),
       snipExpirationDays: parseInt(document.getElementById('expiration').value, 10)
     }, () => {
-      alert('Settings Saved!');
+      showOptionsToast('Settings Saved!');
     });
   });
 

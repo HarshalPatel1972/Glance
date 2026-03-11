@@ -2,6 +2,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("snips-container");
   const emptyState = document.getElementById("empty-state");
 
+  function showPopupToast(message) {
+    let toast = document.getElementById('popup-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'popup-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 1800);
+  }
+
   function loadSnips() {
     chrome.storage.local.get({ savedSnips: [] }, (result) => {
       const snips = result.savedSnips;
@@ -73,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("save-workspace").addEventListener("click", () => {
     chrome.storage.session.get({ activeSnips: [] }, (res) => {
       chrome.storage.local.set({ savedWorkspace: res.activeSnips }, () => {
-        alert("Workspace Saved!");
+        showPopupToast("Workspace Saved!");
       });
     });
   });
@@ -86,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if(tab) {
           chrome.tabs.sendMessage(tab.id, { action: "restore_snips" });
         }
-        alert("Workspace Loaded!");
+        showPopupToast("Workspace Loaded!");
       });
     });
   });

@@ -83,7 +83,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       getActiveSnips((activeSnips) => {
         DBG('Active snips count:', activeSnips.length);
         if (activeSnips.length >= 5) {
-          showToast("Maximum 5 snips active. Close one to continue.");
+          showToast("Maximum 5 snips active. Close one to continue.", 'warning');
           DBG('Snip limit reached');
           setSnipping(false);
           return;
@@ -123,17 +123,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
   });
 
-  function showToast(message) {
-    let toast = document.getElementById("glance-toast");
-    if (!toast) {
-      toast = document.createElement("div");
-      toast.id = "glance-toast";
-      document.body.appendChild(toast);
+  function showToast(message, type = 'info') {
+    let stack = document.getElementById('glance-toast-stack');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.id = 'glance-toast-stack';
+      document.body.appendChild(stack);
     }
-    toast.innerText = message;
-    toast.className = "show";
+
+    const iconName = type === 'success' ? 'check' : (type === 'warning' ? 'frame' : (type === 'error' ? 'close' : 'copy'));
+    const toast = document.createElement('div');
+    toast.className = `glance-toast glance-toast-${type}`;
+    toast.innerHTML = `<span class="glance-toast-icon">${icon(iconName)}</span><span class="glance-toast-text">${message}</span>`;
+    stack.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('show'));
     setTimeout(() => {
-      toast.className = toast.className.replace("show", "");
+      toast.classList.remove('show');
+      toast.classList.add('hide');
+      setTimeout(() => toast.remove(), 160);
     }, 2000);
   }
 

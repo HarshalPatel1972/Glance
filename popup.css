@@ -151,3 +151,25 @@ input:checked + .slider:before {
 .workspace-controls button:hover {
   background: #555;
 }
+
+#popup-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translate(-50%, 10px);
+  opacity: 0;
+  pointer-events: none;
+  padding: 8px 14px;
+  border-radius: 100px;
+  background: var(--glance-surface);
+  border: 1px solid var(--glance-border);
+  color: var(--glance-text-primary);
+  font-size: 13px;
+  box-shadow: var(--shadow-toolbar);
+  transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+}
+
+#popup-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
