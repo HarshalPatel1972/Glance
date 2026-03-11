@@ -27,6 +27,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   });
 
   function cropImage(dataUrl, area, dpr) {
+    // Show a brief flash animation indicating capture is complete
+    const flash = document.createElement("div");
+    flash.id = "glance-flash";
+    document.body.appendChild(flash);
+    setTimeout(() => {
+      if (flash.parentNode) flash.parentNode.removeChild(flash);
+    }, 200);
+
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
@@ -214,10 +222,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     
     // Only capture if selection is large enough
     if (width > 10 && height > 10) {
-      captureSelection(left, top, width, height);
+      // Hide the overlay to avoid tinting the screenshot
+      if (overlayContent) overlayContent.style.visibility = 'hidden';
+      
+      // Wait for DOM repaint before capturing
+      setTimeout(() => {
+        captureSelection(left, top, width, height);
+        closeOverlay();
+      }, 50);
+    } else {
+      closeOverlay();
     }
-    
-    closeOverlay();
   }
 
   function closeOverlay() {
@@ -252,14 +267,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   function captureSelection(left, top, width, height) {
-    // Show a brief flash animation
-    const flash = document.createElement("div");
-    flash.id = "glance-flash";
-    document.body.appendChild(flash);
-    setTimeout(() => {
-      if (flash.parentNode) flash.parentNode.removeChild(flash);
-    }, 200);
-
     // Send coordinates to background to capture
     chrome.runtime.sendMessage({
       action: "capture_area",
