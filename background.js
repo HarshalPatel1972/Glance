@@ -55,6 +55,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         devicePixelRatio: request.devicePixelRatio
       });
     });
+    return true;
+  }
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'get_active_snips') {
+    chrome.storage.session.get({ activeSnips: [] }, (result) => {
+      if (chrome.runtime.lastError) {
+        DBG('get_active_snips error:', chrome.runtime.lastError.message);
+        sendResponse({ ok: false, activeSnips: [] });
+        return;
+      }
+      sendResponse({ ok: true, activeSnips: Array.isArray(result.activeSnips) ? result.activeSnips : [] });
+    });
+    return true;
+  }
+
+  if (request.action === 'set_active_snips') {
+    const activeSnips = Array.isArray(request.activeSnips) ? request.activeSnips : [];
+    chrome.storage.session.set({ activeSnips }, () => {
+      if (chrome.runtime.lastError) {
+        DBG('set_active_snips error:', chrome.runtime.lastError.message);
+        sendResponse({ ok: false });
+        return;
+      }
+      sendResponse({ ok: true });
+    });
+    return true;
   }
 });
 

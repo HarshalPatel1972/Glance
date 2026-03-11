@@ -5,6 +5,44 @@ if (!document.getElementById('glance-init-flag')) {
   document.documentElement.appendChild(_f);
   const DBG = (...a) => console.log('[Glance CS]', ...a);
   DBG('Content script initialized on', window.location.href);
+
+  function getActiveSnips(callback) {
+    chrome.storage.session.get({ activeSnips: [] }, (result) => {
+      if (!chrome.runtime.lastError && result && Array.isArray(result.activeSnips)) {
+        callback(result.activeSnips);
+        return;
+      }
+
+      const err = chrome.runtime.lastError?.message || 'session storage unavailable';
+      DBG('session.get failed, falling back to BG:', err);
+      chrome.runtime.sendMessage({ action: 'get_active_snips' }, (response) => {
+        if (chrome.runtime.lastError) {
+          DBG('BG get_active_snips failed:', chrome.runtime.lastError.message);
+          callback([]);
+          return;
+        }
+        callback(Array.isArray(response?.activeSnips) ? response.activeSnips : []);
+      });
+    });
+  }
+
+  function setActiveSnips(activeSnips, callback) {
+    chrome.storage.session.set({ activeSnips }, () => {
+      if (!chrome.runtime.lastError) {
+        if (callback) callback();
+        return;
+      }
+
+      const err = chrome.runtime.lastError.message;
+      DBG('session.set failed, falling back to BG:', err);
+      chrome.runtime.sendMessage({ action: 'set_active_snips', activeSnips }, () => {
+        if (chrome.runtime.lastError) {
+          DBG('BG set_active_snips failed:', chrome.runtime.lastError.message);
+        }
+        if (callback) callback();
+      });
+    });
+  }
   
   const isSnipping = () => document.documentElement.dataset.glanceSnipping === '1';
   const setSnipping = (v) => { document.documentElement.dataset.glanceSnipping = v ? '1' : '0'; };
@@ -21,9 +59,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (isSnipping()) { DBG('Already snipping, ignoring'); return; }
       setSnipping(true);
 
-      chrome.storage.session.get({ activeSnips: [] }, (result) => {
-        DBG('Active snips count:', result.activeSnips.length);
-        if (result.activeSnips.length >= 5) {
+      getActiveSnips((activeSnips) => {
+        DBG('Active snips count:', activeSnips.length);
+        if (activeSnips.length >= 5) {
           showToast("Maximum 5 snips active. Close one to continue.");
           DBG('Snip limit reached');
           setSnipping(false);
@@ -35,8 +73,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.action === "crop_image") {
       cropImage(request.dataUrl, request.area, request.devicePixelRatio, request.reframeId);
     } else if (request.action === "restore_snips") {
-      chrome.storage.session.get({ activeSnips: [] }, (result) => {
-        result.activeSnips.forEach(snip => {
+      getActiveSnips((activeSnips) => {
+        activeSnips.forEach(snip => {
           if (!document.querySelector(`.glance-widget[data-snip-id="${snip.id}"]`)) {
             createWidget({
               image: snip.image,
@@ -54,7 +92,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       // Re-inject saved snip
       const img = new Image();
       img.onload = () => {
-        chrome.storage.session.get({ activeSnips: [] }, (result) => { createWidget({ image: request.image, width: img.width, height: img.height, snipNumber: result.activeSnips.length + 1 }); });
+        getActiveSnips((activeSnips) => {
+          createWidget({ image: request.image, width: img.width, height: img.height, snipNumber: activeSnips.length + 1 });
+        });
       };
       img.src = request.image;
     }
@@ -108,7 +148,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       );
 
       const croppedDataUrl = canvas.toDataURL('image/png');
-      chrome.storage.session.get({ activeSnips: [] }, (result) => { createWidget({ image: croppedDataUrl, width: area.width, height: area.height, snipNumber: result.activeSnips.length + 1 }); });
+      getActiveSnips((activeSnips) => {
+        createWidget({ image: croppedDataUrl, width: area.width, height: area.height, snipNumber: activeSnips.length + 1 });
+      });
     };
     img.src = dataUrl;
   }
@@ -276,10 +318,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       e.stopPropagation();
       
       // Update session storage when closing
-      chrome.storage.session.get({ activeSnips: [] }, (result) => {
-        const remaining = result.activeSnips.filter(s => s.id !== widget.dataset.snipId);
-        chrome.storage.session.set({ activeSnips: remaining });
-        chrome.runtime.sendMessage({ action: "update_badge", count: remaining.length });
+      getActiveSnips((activeSnips) => {
+        const remaining = activeSnips.filter(s => s.id !== widget.dataset.snipId);
+        setActiveSnips(remaining, () => {
+          chrome.runtime.sendMessage({ action: "update_badge", count: remaining.length });
+        });
       });
 
       widget.remove();
@@ -447,15 +490,17 @@ function saveWidgetState(widget) {
     
     // We'll wait to fully build out the session storage logic in Feature 3,
     // but the prompt for Feature 2 implies setting it now.
-    chrome.storage.session.get({ activeSnips: [] }, (result) => {
-      let snips = result.activeSnips;
+    getActiveSnips((activeSnips) => {
+      let snips = activeSnips;
       const index = snips.findIndex(s => s.id === state.id);
       if (index >= 0) {
         snips[index] = { ...snips[index], ...state };
       } else {
         snips.push(state);
       }
-      chrome.storage.session.set({ activeSnips: snips }); chrome.runtime.sendMessage({ action: "update_badge", count: snips.length });
+      setActiveSnips(snips, () => {
+        chrome.runtime.sendMessage({ action: "update_badge", count: snips.length });
+      });
     });
   }
 
