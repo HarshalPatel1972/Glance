@@ -38,6 +38,40 @@
 }
 
 /* Floating widget */
+/* Toast Notification */
+#glance-toast {
+  visibility: hidden;
+  min-width: 250px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 20px;
+  padding: 12px;
+  position: fixed;
+  z-index: 2147483647;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  font-family: sans-serif;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+#glance-toast.show {
+  visibility: visible;
+  animation: fadein 0.3s, fadeout 0.3s 1.7s;
+}
+
+@keyframes fadein {
+  from {bottom: 0; opacity: 0;}
+  to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadeout {
+  from {bottom: 30px; opacity: 1;}
+  to {bottom: 0; opacity: 0;}
+}
+
 .glance-widget {
   position: fixed;
   z-index: 2147483647; /* Maximum z-index */

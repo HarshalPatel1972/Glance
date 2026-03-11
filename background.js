@@ -35,3 +35,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
 });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => { if(request.action === "update_badge") { if(request.count > 0) { chrome.action.setBadgeText({text: request.count.toString()}); chrome.action.setBadgeBackgroundColor({color: "#4688F1"}); } else { chrome.action.setBadgeText({text: ""}); } } });

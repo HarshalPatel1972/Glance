@@ -1,0 +1,13 @@
+
+>     } else if (request.action === "inject_snip") {
+        // Re-inject saved snip
+        const img = new Image();
+        img.onload = () => {
+          createWidget(request.image, img.width, img.height);
+        };
+        img.src = request.image;
+      }
+    });
+  
+    function showToast(message) {
+
