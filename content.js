@@ -9,13 +9,48 @@ if (typeof window.glanceSnippingInitialized === 'undefined') {
   let endX = 0, endY = 0;
   let isDragging = false;
 
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "activate_snip") {
       if (isSnipping) return;
       isSnipping = true;
       createOverlay();
+    } else if (request.action === "crop_image") {
+      cropImage(request.dataUrl, request.area, request.devicePixelRatio);
     }
   });
+
+  function cropImage(dataUrl, area, dpr) {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = area.width;
+      canvas.height = area.height;
+
+      // Draw the cropped region to the canvas
+      ctx.drawImage(
+        img,
+        area.left * dpr,
+        area.top * dpr,
+        area.width * dpr,
+        area.height * dpr,
+        0,
+        0,
+        area.width,
+        area.height
+      );
+
+      const croppedDataUrl = canvas.toDataURL('image/png');
+      createWidget(croppedDataUrl, area.width, area.height);
+    };
+    img.src = dataUrl;
+  }
+
+  function createWidget(dataUrl, width, height) {
+    // Placeholder for next step
+    console.log("Image cropped.", {width, height});
+  }
 
   function createOverlay() {
     if (document.getElementById("glance-snipping-overlay")) return;
