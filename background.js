@@ -82,10 +82,12 @@ async function injectAndRestore(tabId) {
       files: ["content.css"]
     });
 
-    chrome.tabs.sendMessage(tab.id, { action: "restore_snips" }, (r) => {
-      if (chrome.runtime.lastError) DBG('restore_snips msg error:', chrome.runtime.lastError.message);
-      else DBG('restore_snips ack:', r);
-    });
+    setTimeout(() => {
+      chrome.tabs.sendMessage(tab.id, { action: "restore_snips" }, (r) => {
+        if (chrome.runtime.lastError) DBG('restore_snips msg error:', chrome.runtime.lastError.message);
+        else DBG('restore_snips ack:', r);
+      });
+    }, 150);
   } catch (e) {
     DBG('injectAndRestore skipped/error:', e.message);
   }

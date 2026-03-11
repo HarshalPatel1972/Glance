@@ -53,6 +53,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       };
       img.src = request.image;
     }
+      sendResponse({ ok: true });
+      return true;
   });
 
   function showToast(message) {
