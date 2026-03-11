@@ -56,6 +56,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     widget.style.left = Math.max(10, (window.innerWidth - width) / 2) + "px";
     widget.style.top = Math.max(10, (window.innerHeight - height) / 2) + "px";
 
+    const toolbar = document.createElement("div");
+    toolbar.className = "glance-widget-toolbar";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "glance-btn glance-close-btn";
+    closeBtn.innerHTML = "✕";
+    closeBtn.title = "Close plugin";
+    closeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      widget.remove();
+    });
+
+    toolbar.appendChild(closeBtn);
+    widget.appendChild(toolbar);
+
     const img = document.createElement("img");
     img.className = "glance-widget-img";
     img.src = dataUrl;
