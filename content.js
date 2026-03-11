@@ -122,6 +122,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     document.body.appendChild(widget);
     
     makeDraggable(widget);
+    makeResizable(widget);
+    
+    // Assign ID to widget for session tracking
+    widget.dataset.snipId = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+    saveWidgetState(widget);
+  }
+
+  function saveWidgetState(widget) {
+    if (!widget.dataset.snipId) return;
+    const state = {
+      id: widget.dataset.snipId,
+      left: widget.style.left,
+      top: widget.style.top,
+      width: widget.style.width,
+      height: widget.style.height
+    };
+    
+    // We'll wait to fully build out the session storage logic in Feature 3,
+    // but the prompt for Feature 2 implies setting it now.
+    chrome.storage.session.get({ activeSnips: [] }, (result) => {
+      let snips = result.activeSnips;
+      const index = snips.findIndex(s => s.id === state.id);
+      if (index >= 0) {
+        snips[index] = { ...snips[index], ...state };
+      } else {
+        snips.push(state);
+      }
+      chrome.storage.session.set({ activeSnips: snips });
+    });
   }
 
   function makeDraggable(element) {
@@ -130,8 +159,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     let initialLeft, initialTop;
 
     element.addEventListener("mousedown", (e) => {
-      // Prevent dragging if clicking on interactive elements inside widget later
-      if (e.target.closest('.glance-btn')) return;
+      // Prevent dragging if clicking on UI elements
+      if (e.target.closest('.glance-btn') || e.target.closest('.glance-resize-handle')) return;
 
       isDragging = true;
       startX = e.clientX;
@@ -139,7 +168,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       initialLeft = parseFloat(element.style.left) || 0;
       initialTop = parseFloat(element.style.top) || 0;
       
-      // Stop events from bubbling
       e.stopPropagation();
       e.preventDefault();
     });
@@ -153,7 +181,80 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
 
     document.addEventListener("mouseup", () => {
-      isDragging = false;
+      if (isDragging) {
+        isDragging = false;
+        saveWidgetState(element);
+      }
+    });
+  }
+
+  function makeResizable(widget) {
+    const handles = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
+    handles.forEach(pos => {
+      const handle = document.createElement('div');
+      handle.className = `glance-resize-handle glance-resize-${pos}`;
+      handle.dataset.pos = pos;
+      widget.appendChild(handle);
+
+      let isResizing = false;
+      let startX, startY, startWidth, startHeight, startLeft, startTop;
+
+      handle.addEventListener("mousedown", (e) => {
+        isResizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = parseFloat(widget.style.width);
+        startHeight = parseFloat(widget.style.height);
+        startLeft = parseFloat(widget.style.left);
+        startTop = parseFloat(widget.style.top);
+        
+        e.stopPropagation();
+        e.preventDefault();
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isResizing) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        let newLeft = startLeft;
+        let newTop = startTop;
+
+        if (pos.includes('e')) newWidth = startWidth + dx;
+        if (pos.includes('s')) newHeight = startHeight + dy;
+        if (pos.includes('w')) {
+          newWidth = startWidth - dx;
+          newLeft = startLeft + dx;
+        }
+        if (pos.includes('n')) {
+          newHeight = startHeight - dy;
+          newTop = startTop + dy;
+        }
+
+        const minW = 150, minH = 100;
+        const maxW = window.innerWidth * 0.8;
+        const maxH = window.innerHeight * 0.8;
+
+        if (newWidth >= minW && newWidth <= maxW) {
+          widget.style.width = newWidth + "px";
+          // Only adjust left if we resize from the left
+          if (pos.includes('w')) widget.style.left = newLeft + "px";
+        }
+        if (newHeight >= minH && newHeight <= maxH) {
+          widget.style.height = newHeight + "px";
+          // Only adjust top if we resize from the top
+          if (pos.includes('n')) widget.style.top = newTop + "px";
+        }
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (isResizing) {
+          isResizing = false;
+          saveWidgetState(widget);
+        }
+      });
     });
   }
 

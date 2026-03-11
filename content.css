@@ -44,11 +44,34 @@
   background: white;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  overflow: hidden; /* Needed for CSS resize */
+  overflow: visible;
   box-sizing: border-box;
   animation: glance-widget-enter 0.3s ease-out;
-  resize: both;
 }
+
+.glance-resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: white;
+  border: 1px solid #333;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 3;
+}
+
+.glance-widget:hover .glance-resize-handle {
+  opacity: 1;
+}
+
+.glance-resize-nw { top: -4px; left: -4px; cursor: nwse-resize; }
+.glance-resize-n  { top: -4px; left: calc(50% - 4px); cursor: ns-resize; }
+.glance-resize-ne { top: -4px; right: -4px; cursor: nesw-resize; }
+.glance-resize-e  { top: calc(50% - 4px); right: -4px; cursor: ew-resize; }
+.glance-resize-se { bottom: -4px; right: -4px; cursor: nwse-resize; }
+.glance-resize-s  { bottom: -4px; left: calc(50% - 4px); cursor: ns-resize; }
+.glance-resize-sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
+.glance-resize-w  { top: calc(50% - 4px); left: -4px; cursor: ew-resize; }
 
 @keyframes glance-widget-enter {
   0% {
@@ -110,4 +133,5 @@
   user-select: none;
   pointer-events: none;
   border-radius: 10px;
+  object-fit: contain;
 }
