@@ -218,6 +218,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     let lastX = 0, lastY = 0;
     let currentColor = '#ff0000';
     let isTextMode = false;
+    const drawHistory = [];
 
     const drawBtn = document.createElement('button');
     drawBtn.className = 'glance-btn glance-draw-btn';
@@ -230,6 +231,60 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     colorPicker.className = 'glance-color-picker';
     colorPicker.title = 'Pen Color';
     colorPicker.style.display = 'none';
+
+    const annotationHeader = document.createElement('div');
+    annotationHeader.className = 'glance-annotation-header';
+    annotationHeader.innerHTML = `<span class="glance-annotation-label">Annotation Mode</span>`;
+    const undoBtn = document.createElement('button');
+    undoBtn.className = 'glance-btn glance-undo-btn';
+    undoBtn.innerHTML = icon('frame');
+    undoBtn.title = 'Undo';
+    const doneBtn = document.createElement('button');
+    doneBtn.className = 'glance-btn glance-done-btn';
+    doneBtn.innerHTML = icon('check');
+    doneBtn.title = 'Done';
+    annotationHeader.appendChild(undoBtn);
+    annotationHeader.appendChild(doneBtn);
+
+    const annotationSidebar = document.createElement('div');
+    annotationSidebar.className = 'glance-annotation-sidebar';
+
+    const markerBtn = document.createElement('button');
+    markerBtn.className = 'glance-btn glance-marker-btn';
+    markerBtn.innerHTML = icon('pen');
+    markerBtn.title = 'Mark';
+
+    const annotationOptions = document.createElement('div');
+    annotationOptions.className = 'glance-annotation-options';
+    const strokeSlider = document.createElement('input');
+    strokeSlider.type = 'range';
+    strokeSlider.min = '1';
+    strokeSlider.max = '12';
+    strokeSlider.value = '3';
+    strokeSlider.className = 'glance-stroke-slider';
+    const swatches = document.createElement('div');
+    swatches.className = 'glance-color-swatches';
+    ['#ff4d6d', '#FFB347', '#5B6EF5', '#3DDC84', '#ffffff', '#000000'].forEach((color) => {
+      const swatch = document.createElement('button');
+      swatch.className = 'glance-color-swatch';
+      swatch.style.background = color;
+      swatch.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentColor = color;
+        colorPicker.value = color;
+        swatches.querySelectorAll('.glance-color-swatch').forEach((n) => n.classList.remove('selected'));
+        swatch.classList.add('selected');
+      });
+      if (color === '#ff4d6d') swatch.classList.add('selected');
+      swatches.appendChild(swatch);
+    });
+    annotationOptions.appendChild(strokeSlider);
+    annotationOptions.appendChild(swatches);
+
+    const updateAnnotationChrome = () => {
+      const enabled = isDrawingMode || isTextMode;
+      widget.classList.toggle('annotation-mode', enabled);
+    };
 
     drawBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -247,6 +302,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         colorPicker.style.display = 'none';
         saveWidgetState(widget);
       }
+      updateAnnotationChrome();
     });
 
     colorPicker.addEventListener('input', (e) => {
@@ -271,6 +327,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         textBtn.style.background = 'none';
         widget.classList.remove('text-mode');
       }
+      updateAnnotationChrome();
+    });
+
+    markerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isDrawingMode = true;
+      isTextMode = false;
+      currentColor = '#FFB347';
+      colorPicker.value = '#FFB347';
+      drawBtn.style.background = 'rgba(0,0,0,0.2)';
+      textBtn.style.background = 'none';
+      widget.classList.add('drawing-mode');
+      widget.classList.remove('text-mode');
+      updateAnnotationChrome();
     });
 
     const reframeBtn = document.createElement('button');
@@ -393,6 +463,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const actionBar = document.createElement("div");
     actionBar.className = "glance-widget-actionbar";
+    const annotateTriggerBtn = document.createElement("button");
+    annotateTriggerBtn.className = "glance-btn glance-annotate-trigger";
+    annotateTriggerBtn.innerHTML = icon('pen');
+    annotateTriggerBtn.title = "Annotate";
+    annotateTriggerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawBtn.click();
+    });
+    const extractTriggerBtn = document.createElement("button");
+    extractTriggerBtn.className = "glance-btn glance-extract-trigger";
+    extractTriggerBtn.innerHTML = icon('text');
+    extractTriggerBtn.title = "Extract Text";
+    extractTriggerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      textBtn.click();
+    });
     const shareBtn = document.createElement("button");
     shareBtn.className = "glance-btn glance-share-btn";
     shareBtn.innerHTML = icon('share');
@@ -410,8 +496,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     toolbar.appendChild(toolbarLeft);
     toolbar.appendChild(toolbarRight);
 
-    actionBar.appendChild(drawBtn);
-    actionBar.appendChild(textBtn);
+    actionBar.appendChild(annotateTriggerBtn);
+    actionBar.appendChild(extractTriggerBtn);
     actionBar.appendChild(copyBtn);
     actionBar.appendChild(shareBtn);
     actionBar.appendChild(videoBtn);
@@ -421,8 +507,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     actionBar.appendChild(opacitySlider);
     actionBar.appendChild(colorPicker);
 
+    annotationSidebar.appendChild(drawBtn);
+    annotationSidebar.appendChild(markerBtn);
+    annotationSidebar.appendChild(textBtn);
+
     widget.appendChild(toolbar);
     widget.appendChild(actionBar);
+    widget.appendChild(annotationHeader);
+    widget.appendChild(annotationSidebar);
+    widget.appendChild(annotationOptions);
 
     const body = document.createElement("div");
     body.className = "glance-widget-body";
@@ -443,6 +536,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.lineWidth = 3;
+
+    strokeSlider.addEventListener('input', (e) => {
+      ctx.lineWidth = parseInt(e.target.value, 10);
+    });
+
+    undoBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const previous = drawHistory.pop();
+      if (!previous) return;
+      ctx.putImageData(previous, 0, 0);
+      saveWidgetState(widget);
+    });
+
+    doneBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isDrawingMode = false;
+      isTextMode = false;
+      widget.classList.remove('drawing-mode');
+      widget.classList.remove('text-mode');
+      widget.classList.remove('annotation-mode');
+      drawBtn.style.background = 'none';
+      textBtn.style.background = 'none';
+      colorPicker.style.display = 'none';
+      saveWidgetState(widget);
+    });
 
     canvas.addEventListener('mousedown', (e) => {
       if (isTextMode) {
@@ -505,6 +623,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       if(!isDrawingMode) return;
       isPainting = true;
+      try {
+        drawHistory.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      } catch (err) {
+        DBG('draw history capture failed:', err.message);
+      }
       const rect = canvas.getBoundingClientRect();
       lastX = e.clientX - rect.left;
       lastY = e.clientY - rect.top;
