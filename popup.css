@@ -132,3 +132,20 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(14px);
 }
+.workspace-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.workspace-controls button {
+  flex: 1;
+  padding: 8px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.workspace-controls button:hover {
+  background: #555;
+}

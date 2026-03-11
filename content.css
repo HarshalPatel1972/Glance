@@ -202,3 +202,7 @@
   border: 1px solid #ccc;
   cursor: pointer;
 }
+.glance-widget.text-mode .glance-widget-canvas {
+  pointer-events: auto;
+  cursor: text;
+}

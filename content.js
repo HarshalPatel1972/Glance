@@ -22,7 +22,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         createOverlay();
       });
     } else if (request.action === "crop_image") {
-      cropImage(request.dataUrl, request.area, request.devicePixelRatio);
+      cropImage(request.dataUrl, request.area, request.devicePixelRatio, request.reframeId);
     } else if (request.action === "restore_snips") {
       chrome.storage.session.get({ activeSnips: [] }, (result) => {
         result.activeSnips.forEach(snip => {
@@ -63,7 +63,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }, 2000);
   }
 
-  function cropImage(dataUrl, area, dpr) {
+  function cropImage(dataUrl, area, dpr, reframeId) {
     // Show a brief flash animation indicating capture is complete
     const flash = document.createElement("div");
     flash.id = "glance-flash";
@@ -99,7 +99,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     img.src = dataUrl;
   }
 
-    function createWidget({ image, width, height, id, left, top, snipNumber }) {
+    function createWidget({ image, width, height, id, left, top, snipNumber, drawing, notes }) {
     const widget = document.createElement("div");
     widget.className = "glance-widget";
     widget.style.width = width + "px";
@@ -221,6 +221,64 @@ toolbar.appendChild(opacitySlider);
     ctx.lineWidth = 3;
 
     canvas.addEventListener('mousedown', (e) => {
+      if (isTextMode) {
+        e.stopPropagation();
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const ta = document.createElement("textarea");
+        ta.className = "glance-text-note";
+        ta.style.position = "absolute";
+        ta.style.left = x + "px";
+        ta.style.top = y + "px";
+        ta.style.background = "rgba(255,255,255,0.8)";
+        ta.style.border = "1px dashed #333";
+        ta.style.padding = "4px";
+        ta.style.color = "#000";
+        ta.style.fontFamily = "sans-serif";
+        ta.style.fontSize = "14px";
+        ta.style.zIndex = "3";
+        ta.style.minWidth = "100px";
+        ta.style.minHeight = "40px";
+        
+        // Auto-resize
+        ta.addEventListener('input', () => {
+          ta.style.height = 'auto';
+          ta.style.height = ta.scrollHeight + 'px';
+        });
+        
+        // Make draggable by the textarea itself or allow typing
+        let isTaDragging = false;
+        let startTaX, startTaY, initLeft, initTop;
+        ta.addEventListener('mousedown', (te) => {
+          if (isTextMode) {
+             // In text mode, maybe we drag it
+             isTaDragging = true;
+             startTaX = te.clientX;
+             startTaY = te.clientY;
+             initLeft = parseFloat(ta.style.left) || 0;
+             initTop = parseFloat(ta.style.top) || 0;
+          }
+          te.stopPropagation();
+        });
+        document.addEventListener('mousemove', (te) => {
+          if (!isTaDragging) return;
+          ta.style.left = initLeft + (te.clientX - startTaX) + "px";
+          ta.style.top = initTop + (te.clientY - startTaY) + "px";
+        });
+        document.addEventListener('mouseup', () => isTaDragging = false);
+
+        widget.appendChild(ta);
+        ta.focus();
+        
+        // Turn off text mode after placing one
+        isTextMode = false;
+        textBtn.style.background = "none";
+        widget.classList.remove("text-mode");
+        return;
+      }
+
       if(!isDrawingMode) return;
       isPainting = true;
       const rect = canvas.getBoundingClientRect();
@@ -249,6 +307,10 @@ toolbar.appendChild(opacitySlider);
 
 
     document.body.appendChild(widget);
+
+    if(drawing) { const dimg = new Image(); dimg.onload = () => ctx.drawImage(dimg, 0, 0); dimg.src = drawing; }
+
+    if(notes) { notes.forEach(note => { const ta = document.createElement("textarea"); ta.className = "glance-text-note"; ta.style.position = "absolute"; ta.style.background = "rgba(255,255,255,0.8)"; ta.style.border = "1px dashed #333"; ta.style.padding = "4px"; ta.style.color = "#000"; ta.style.fontFamily = "sans-serif"; ta.style.fontSize = "14px"; ta.style.zIndex = "3"; ta.style.left = note.left; ta.style.top = note.top; ta.style.width = note.width; ta.style.height = note.height; ta.value = note.value; widget.appendChild(ta); ta.addEventListener('input', () => saveWidgetState(widget)); let isTaDragging = false; let startTaX, startTaY, initLeft, initTop; ta.addEventListener('mousedown', (te) => { if(isTextMode) { isTaDragging = true; startTaX = te.clientX; startTaY = te.clientY; initLeft = parseFloat(ta.style.left) || 0; initTop = parseFloat(ta.style.top) || 0; } te.stopPropagation(); }); document.addEventListener('mousemove', (te) => { if(!isTaDragging) return; ta.style.left = initLeft + (te.clientX - startTaX) + "px"; ta.style.top = initTop + (te.clientY - startTaY) + "px"; }); document.addEventListener('mouseup', () => isTaDragging = false); }); }
 
     makeDraggable(widget);
     makeResizable(widget);
@@ -283,7 +345,9 @@ function saveWidgetState(widget) {
       width: widget.style.width,
       height: widget.style.height,
         image: widget.dataset.image,
-        snipNumber: widget.dataset.snipNumber
+        snipNumber: widget.dataset.snipNumber,
+        drawing: widget.querySelector('.glance-widget-canvas') ? widget.querySelector('.glance-widget-canvas').toDataURL() : null,
+        notes: Array.from(widget.querySelectorAll('.glance-text-note')).map(ta => ({ left: ta.style.left, top: ta.style.top, width: ta.style.width, height: ta.style.height, value: ta.value }))
     };
     
     // We'll wait to fully build out the session storage logic in Feature 3,

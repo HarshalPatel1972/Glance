@@ -1,3 +1,14 @@
+chrome.runtime.onStartup.addListener(() => {
+  chrome.storage.local.get({ savedSnips: [], snipExpirationDays: 7 }, (res) => {
+    const now = Date.now();
+    const maxAge = res.snipExpirationDays * 24 * 60 * 60 * 1000;
+    const filtered = res.savedSnips.filter(s => now - s.timestamp < maxAge);
+    if(filtered.length !== res.savedSnips.length) {
+      chrome.storage.local.set({ savedSnips: filtered });
+    }
+  });
+});
+
 chrome.commands.onCommand.addListener(async (command) => {
   if (command === "trigger_snip") {
     try {
