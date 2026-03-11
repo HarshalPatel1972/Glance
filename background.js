@@ -13,7 +13,7 @@ chrome.commands.onCommand.addListener(async (command) => {
   if (command === "trigger_snip") {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab) return;
+      if (!tab || !tab.url || tab.url.startsWith("chrome://") || tab.url.startsWith("edge://") || tab.url.startsWith("about:")) return;
       
       // Inject the scripts and styles
       await chrome.scripting.executeScript({
