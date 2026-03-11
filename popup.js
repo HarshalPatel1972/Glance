@@ -69,25 +69,25 @@ document.addEventListener("DOMContentLoaded", () => {
       loadSnips();
     });
   });
-});
 
-document.getElementById("save-workspace").addEventListener("click", () => {
-  chrome.storage.session.get({ activeSnips: [] }, (res) => {
-    chrome.storage.local.set({ savedWorkspace: res.activeSnips }, () => {
-      alert("Workspace Saved!");
+  document.getElementById("save-workspace").addEventListener("click", () => {
+    chrome.storage.session.get({ activeSnips: [] }, (res) => {
+      chrome.storage.local.set({ savedWorkspace: res.activeSnips }, () => {
+        alert("Workspace Saved!");
+      });
     });
   });
-});
 
-document.getElementById("load-workspace").addEventListener("click", () => {
-  chrome.storage.local.get({ savedWorkspace: [] }, (res) => {
-    chrome.storage.session.set({ activeSnips: res.savedWorkspace }, async () => {
-      chrome.runtime.sendMessage({ action: "update_badge", count: res.savedWorkspace.length });
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if(tab) {
-        chrome.tabs.sendMessage(tab.id, { action: "restore_snips" });
-      }
-      alert("Workspace Loaded!");
+  document.getElementById("load-workspace").addEventListener("click", () => {
+    chrome.storage.local.get({ savedWorkspace: [] }, (res) => {
+      chrome.storage.session.set({ activeSnips: res.savedWorkspace }, async () => {
+        chrome.runtime.sendMessage({ action: "update_badge", count: res.savedWorkspace.length });
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if(tab) {
+          chrome.tabs.sendMessage(tab.id, { action: "restore_snips" });
+        }
+        alert("Workspace Loaded!");
+      });
     });
   });
 });
