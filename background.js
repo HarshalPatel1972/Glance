@@ -16,3 +16,17 @@ chrome.commands.onCommand.addListener((command) => {
     });
   }
 });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "capture_area") {
+    chrome.tabs.captureVisibleTab(null, { format: "png" }, (dataUrl) => {
+      // Send back the full dataUrl for cropping
+      chrome.tabs.sendMessage(sender.tab.id, {
+        action: "crop_image",
+        dataUrl: dataUrl,
+        area: request.area,
+        devicePixelRatio: request.devicePixelRatio
+      });
+    });
+  }
+});
