@@ -169,3 +169,36 @@
   border-radius: 10px;
   object-fit: contain;
 }
+
+.glance-widget-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.glance-widget.drawing-mode .glance-widget-canvas {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+.glance-color-picker {
+  display: none;
+  position: absolute;
+  top: 30px;
+  left: 5px;
+  background: #fff;
+  border-radius: 4px;
+  padding: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.glance-widget.drawing-mode .glance-color-picker {
+  display: flex;
+  gap: 4px;
+}
+.glance-color-btn {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}

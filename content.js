@@ -209,10 +209,66 @@ toolbar.appendChild(opacitySlider);
     imgElement.src = image;
     widget.appendChild(imgElement);
 
+    const canvas = document.createElement("canvas");
+    canvas.className = "glance-widget-canvas";
+    canvas.width = width;
+    canvas.height = height;
+    widget.appendChild(canvas);
+    
+    const ctx = canvas.getContext('2d');
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 3;
+
+    canvas.addEventListener('mousedown', (e) => {
+      if(!isDrawingMode) return;
+      isPainting = true;
+      const rect = canvas.getBoundingClientRect();
+      lastX = e.clientX - rect.left;
+      lastY = e.clientY - rect.top;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if(!isDrawingMode || !isPainting) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      ctx.strokeStyle = currentColor;
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+
+      lastX = x;
+      lastY = y;
+    });
+
+    canvas.addEventListener('mouseup', () => isPainting = false);
+    canvas.addEventListener('mouseleave', () => isPainting = false);
+
+
     document.body.appendChild(widget);
 
     makeDraggable(widget);
     makeResizable(widget);
+
+    let isCollapsed = false;
+    let previousHeight = height;
+    widget.addEventListener("dblclick", (e) => {
+      if(e.target.closest(".glance-btn") || e.target.closest(".glance-opacity-slider") || widget.classList.contains("drawing-mode")) return;
+      isCollapsed = !isCollapsed;
+      if(isCollapsed) {
+        previousHeight = widget.style.height;
+        widget.style.height = "36px";
+        imgElement.style.display = "none";
+        canvas.style.display = "none";
+      } else {
+        widget.style.height = previousHeight;
+        imgElement.style.display = "block";
+        canvas.style.display = "block";
+      }
+    });
 
     // Assign ID to widget for session tracking
     widget.dataset.snipId = id || (Date.now().toString() + Math.random().toString(36).substr(2, 5)); widget.dataset.image = image; if (snipNumber) widget.dataset.snipNumber = snipNumber;
@@ -251,7 +307,7 @@ function saveWidgetState(widget) {
 
     element.addEventListener("mousedown", (e) => {
       // Prevent dragging if clicking on UI elements
-      if (e.target.closest('.glance-btn') || e.target.closest('.glance-resize-handle')) return;
+      if (e.target.closest('.glance-btn') || e.target.closest('.glance-resize-handle') || element.classList.contains('drawing-mode')) return;
 
       isDragging = true;
       startX = e.clientX;
