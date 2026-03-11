@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+:where(button, input, textarea, select, a, [contenteditable="true"]):focus-visible {
+  outline: 2px solid var(--glance-accent);
+  outline-offset: 2px;
+}
+
 /* Overlay during selection */
 #glance-snipping-overlay {
   position: fixed;
@@ -678,4 +683,42 @@
 
 .glance-widget-thumbnail:hover .glance-thumb-tooltip {
   opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition-property: opacity !important;
+    transition-duration: 120ms !important;
+    transition-timing-function: linear !important;
+    scroll-behavior: auto !important;
+  }
+
+  .glance-widget,
+  .glance-widget.glance-widget-entering,
+  .glance-widget.glance-widget-ready,
+  .glance-widget.glance-widget-exit,
+  .glance-toast,
+  .glance-lightbox,
+  .glance-lightbox-image,
+  .glance-widget-actionbar,
+  .glance-widget-thumbnail,
+  .glance-title-hidden,
+  .glance-snip-title:not(.glance-title-hidden) {
+    transform: none !important;
+  }
+
+  .glance-widget.glance-widget-entering,
+  .glance-widget.glance-widget-exit,
+  .glance-toast.hide,
+  .glance-lightbox.closing {
+    opacity: 0 !important;
+  }
+
+  .glance-widget.glance-widget-ready,
+  .glance-toast.show,
+  .glance-lightbox.show,
+  .glance-lightbox.show .glance-lightbox-image {
+    opacity: 1 !important;
+  }
 }
