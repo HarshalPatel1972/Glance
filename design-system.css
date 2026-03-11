@@ -1,6 +1,7 @@
 :root {
   --glance-bg: #0E0E10;
   --glance-surface: #1A1A1F;
+  --glance-surface-hover: #23232B;
   --glance-border: #2A2A32;
   --glance-border-hover: #3E3E4E;
   --glance-accent: #5B6EF5;

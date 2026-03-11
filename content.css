@@ -1,5 +1,9 @@
 @import url('./design-system.css');
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* Overlay during selection */
 #glance-snipping-overlay {
   position: fixed;

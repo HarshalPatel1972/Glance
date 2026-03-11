@@ -1,5 +1,9 @@
 @import url('./design-system.css');
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   width: 320px;
   margin: 0;
@@ -105,7 +109,7 @@ body {
 
 .snip-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
   gap: 8px;
 }
 
@@ -168,7 +172,7 @@ body {
 }
 
 .ghost-btn:hover {
-  background: #23232b;
+  background: var(--glance-surface-hover);
 }
 
 .ghost-btn:active {
