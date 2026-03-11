@@ -7,18 +7,99 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.35);
-  z-index: 2147483646; /* One less than widget */
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 2147483640;
   cursor: crosshair;
   user-select: none;
+  opacity: 0;
+  animation: glance-overlay-in 150ms ease-out forwards;
 }
 
 #glance-selection-box {
   position: absolute;
-  border: 2px solid #4A90E2;
-  background: rgba(74, 144, 226, 0.1);
+  border: 2px solid var(--glance-accent);
+  background: rgba(91, 110, 245, 0.08);
   display: none;
   pointer-events: none;
+  box-sizing: border-box;
+}
+
+.glance-overlay-mask {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+#glance-instruction-label {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--glance-text-secondary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  z-index: 2147483642;
+}
+
+#glance-instruction-label span {
+  margin-left: 8px;
+  opacity: 0.8;
+}
+
+#glance-dimension-pill {
+  position: absolute;
+  display: none;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--glance-bg);
+  color: var(--glance-text-primary);
+  border: 1px solid var(--glance-border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 2147483643;
+}
+
+.glance-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--glance-accent);
+  border-style: solid;
+  border-width: 0;
+}
+
+.glance-corner-tl {
+  top: -2px;
+  left: -2px;
+  border-top-width: 3px;
+  border-left-width: 3px;
+}
+
+.glance-corner-tr {
+  top: -2px;
+  right: -2px;
+  border-top-width: 3px;
+  border-right-width: 3px;
+}
+
+.glance-corner-bl {
+  bottom: -2px;
+  left: -2px;
+  border-bottom-width: 3px;
+  border-left-width: 3px;
+}
+
+.glance-corner-br {
+  bottom: -2px;
+  right: -2px;
+  border-bottom-width: 3px;
+  border-right-width: 3px;
+}
+
+@keyframes glance-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 #glance-flash {

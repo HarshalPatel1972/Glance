@@ -64,6 +64,11 @@ if (!document.getElementById('glance-init-flag')) {
   const icon = (name) => `<svg class="glance-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
   let overlayContent = null;
   let selectionBox = null;
+  let dimensionPill = null;
+  let maskTop = null;
+  let maskLeft = null;
+  let maskRight = null;
+  let maskBottom = null;
   
   let startX = 0, startY = 0;
   let endX = 0, endY = 0;
@@ -707,10 +712,38 @@ function saveWidgetState(widget) {
 
     overlayContent = document.createElement("div");
     overlayContent.id = "glance-snipping-overlay";
+
+    const instruction = document.createElement('div');
+    instruction.id = 'glance-instruction-label';
+    instruction.innerHTML = 'Draw a selection to snip <span>[Esc to cancel]</span>';
+    overlayContent.appendChild(instruction);
+
+    maskTop = document.createElement('div');
+    maskLeft = document.createElement('div');
+    maskRight = document.createElement('div');
+    maskBottom = document.createElement('div');
+    maskTop.className = 'glance-overlay-mask';
+    maskLeft.className = 'glance-overlay-mask';
+    maskRight.className = 'glance-overlay-mask';
+    maskBottom.className = 'glance-overlay-mask';
+    overlayContent.appendChild(maskTop);
+    overlayContent.appendChild(maskLeft);
+    overlayContent.appendChild(maskRight);
+    overlayContent.appendChild(maskBottom);
     
     selectionBox = document.createElement("div");
     selectionBox.id = "glance-selection-box";
+    ['tl', 'tr', 'bl', 'br'].forEach((corner) => {
+      const marker = document.createElement('span');
+      marker.className = `glance-corner glance-corner-${corner}`;
+      selectionBox.appendChild(marker);
+    });
     overlayContent.appendChild(selectionBox);
+
+    dimensionPill = document.createElement('div');
+    dimensionPill.id = 'glance-dimension-pill';
+    dimensionPill.textContent = '0 × 0';
+    overlayContent.appendChild(dimensionPill);
 
     overlayContent.addEventListener("mousedown", onMouseDown);
     overlayContent.addEventListener("mousemove", onMouseMove);
@@ -719,6 +752,31 @@ function saveWidgetState(widget) {
     document.addEventListener("keydown", handleKeyDown);
 
     document.body.appendChild(overlayContent);
+  }
+
+  function updateOverlayMasks(left, top, width, height) {
+    if (!maskTop || !maskLeft || !maskRight || !maskBottom) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    maskTop.style.left = '0px';
+    maskTop.style.top = '0px';
+    maskTop.style.width = vw + 'px';
+    maskTop.style.height = top + 'px';
+
+    maskLeft.style.left = '0px';
+    maskLeft.style.top = top + 'px';
+    maskLeft.style.width = left + 'px';
+    maskLeft.style.height = height + 'px';
+
+    maskRight.style.left = (left + width) + 'px';
+    maskRight.style.top = top + 'px';
+    maskRight.style.width = Math.max(0, vw - (left + width)) + 'px';
+    maskRight.style.height = height + 'px';
+
+    maskBottom.style.left = '0px';
+    maskBottom.style.top = (top + height) + 'px';
+    maskBottom.style.width = vw + 'px';
+    maskBottom.style.height = Math.max(0, vh - (top + height)) + 'px';
   }
 
   function handleKeyDown(e) {
@@ -731,12 +789,15 @@ function saveWidgetState(widget) {
     isDragging = true;
     startX = e.clientX;
     startY = e.clientY;
+    endX = e.clientX;
+    endY = e.clientY;
     
     selectionBox.style.left = startX + "px";
     selectionBox.style.top = startY + "px";
     selectionBox.style.width = "0px";
     selectionBox.style.height = "0px";
     selectionBox.style.display = "block";
+    updateOverlayMasks(startX, startY, 0, 0);
   }
 
   function onMouseMove(e) {
@@ -754,6 +815,14 @@ function saveWidgetState(widget) {
     selectionBox.style.top = top + "px";
     selectionBox.style.width = width + "px";
     selectionBox.style.height = height + "px";
+
+    if (dimensionPill) {
+      dimensionPill.style.display = 'block';
+      dimensionPill.style.left = (e.clientX + 12) + 'px';
+      dimensionPill.style.top = (e.clientY + 12) + 'px';
+      dimensionPill.textContent = `${width} × ${height}`;
+    }
+    updateOverlayMasks(left, top, width, height);
   }
 
   function onMouseUp(e) {
@@ -787,6 +856,11 @@ function saveWidgetState(widget) {
       overlayContent.parentNode.removeChild(overlayContent);
       overlayContent = null;
       selectionBox = null;
+      dimensionPill = null;
+      maskTop = null;
+      maskLeft = null;
+      maskRight = null;
+      maskBottom = null;
     }
   }
 
