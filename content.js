@@ -119,6 +119,37 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         snipBadge.textContent = `#${snipNumber}`;
     }
     
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "glance-btn glance-copy-btn";
+    copyBtn.innerHTML = "📋";
+    copyBtn.title = "Copy to Clipboard";
+    copyBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      try {
+        const res = await fetch(image);
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({[blob.type]: blob})]);
+        copyBtn.innerHTML = "✓";
+        setTimeout(() => copyBtn.innerHTML = "📋", 1500);
+      } catch (err) {
+        console.error("Copy failed", err);
+      }
+    });
+
+    const downloadBtn = document.createElement("button");
+    downloadBtn.className = "glance-btn glance-download-btn";
+    downloadBtn.innerHTML = "⬇";
+    downloadBtn.title = "Download Snip";
+    downloadBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const a = document.createElement("a");
+      a.href = image;
+      a.download = `snip_${Date.now()}.png`;
+      a.click();
+      downloadBtn.innerHTML = "✓";
+      setTimeout(() => downloadBtn.innerHTML = "⬇", 1500);
+    });
+
     const opacitySlider = document.createElement("input");
     opacitySlider.type = "range";
     opacitySlider.min = "0.1";
@@ -166,7 +197,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(snipNumber) {
         toolbar.appendChild(snipBadge);
     }
-    toolbar.appendChild(opacitySlider);
+    toolbar.appendChild(copyBtn);
+toolbar.appendChild(downloadBtn);
+toolbar.appendChild(opacitySlider);
     toolbar.appendChild(saveBtn);
     toolbar.appendChild(closeBtn);
     widget.appendChild(toolbar);
