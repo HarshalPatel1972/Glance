@@ -1,4 +1,7 @@
+const DBG = (...a) => console.log('[Glance BG]', ...a);
+
 chrome.runtime.onStartup.addListener(() => {
+  DBG('onStartup fired');
   chrome.storage.local.get({ savedSnips: [], snipExpirationDays: 7 }, (res) => {
     const now = Date.now();
     const maxAge = res.snipExpirationDays * 24 * 60 * 60 * 1000;
@@ -25,18 +28,24 @@ chrome.commands.onCommand.addListener(async (command) => {
         files: ["content.css"]
       });
       
-      // We'll send a message to the content script to activate snip mode
-      chrome.tabs.sendMessage(tab.id, { action: "activate_snip" });
+      DBG('Injected content scripts OK, sending activate_snip');
+      chrome.tabs.sendMessage(tab.id, { action: "activate_snip" }, (r) => {
+        if (chrome.runtime.lastError) DBG('sendMessage activate_snip error:', chrome.runtime.lastError.message);
+        else DBG('activate_snip ack:', r);
+      });
     } catch (err) {
-      console.error("Failed to inject snip mode:", err);
+      console.error('[Glance BG] Failed to inject snip mode:', err);
     }
   }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  DBG('Message received:', request.action);
   if (request.action === "capture_area") {
+    DBG('Capturing visible tab...');
     chrome.tabs.captureVisibleTab(null, { format: "png" }, (dataUrl) => {
-      // Send back the full dataUrl for cropping
+      if (chrome.runtime.lastError) { console.error('[Glance BG] captureVisibleTab error:', chrome.runtime.lastError.message); return; }
+      DBG('Capture success, cropping area:', request.area);
       chrome.tabs.sendMessage(sender.tab.id, {
         action: "crop_image",
         dataUrl: dataUrl,
@@ -59,6 +68,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 });
 
 async function injectAndRestore(tabId) {
+  DBG('injectAndRestore tabId:', tabId);
   try {
     const tab = await chrome.tabs.get(tabId);
     if (!tab.url || tab.url.startsWith("chrome://") || tab.url.startsWith("edge://") || tab.url.startsWith("about:")) return;
@@ -72,8 +82,11 @@ async function injectAndRestore(tabId) {
       files: ["content.css"]
     });
 
-    chrome.tabs.sendMessage(tab.id, { action: "restore_snips" });
+    chrome.tabs.sendMessage(tab.id, { action: "restore_snips" }, (r) => {
+      if (chrome.runtime.lastError) DBG('restore_snips msg error:', chrome.runtime.lastError.message);
+      else DBG('restore_snips ack:', r);
+    });
   } catch (e) {
-    // Ignore errors for uninjectable tabs
+    DBG('injectAndRestore skipped/error:', e.message);
   }
 }

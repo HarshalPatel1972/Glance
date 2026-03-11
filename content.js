@@ -1,5 +1,7 @@
 if (typeof window.glanceSnippingInitialized === 'undefined') {
   window.glanceSnippingInitialized = true;
+  const DBG = (...a) => console.log('[Glance CS]', ...a);
+  DBG('Content script initialized on', window.location.href);
   
   let isSnipping = false;
   let overlayContent = null;
@@ -10,15 +12,19 @@ if (typeof window.glanceSnippingInitialized === 'undefined') {
   let isDragging = false;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    DBG('Message received:', request.action);
     if (request.action === "activate_snip") {
-      if (isSnipping) return;
+      if (isSnipping) { DBG('Already snipping, ignoring'); return; }
       
       chrome.storage.session.get({ activeSnips: [] }, (result) => {
+        DBG('Active snips count:', result.activeSnips.length);
         if (result.activeSnips.length >= 5) {
           showToast("Maximum 5 snips active. Close one to continue.");
+          DBG('Snip limit reached');
           return;
         }
         isSnipping = true;
+        DBG('Creating overlay...');
         createOverlay();
       });
     } else if (request.action === "crop_image") {
@@ -64,6 +70,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   function cropImage(dataUrl, area, dpr, reframeId) {
+    DBG('cropImage called, area:', area, 'dpr:', dpr);
     // Show a brief flash animation indicating capture is complete
     const flash = document.createElement("div");
     flash.id = "glance-flash";
@@ -660,6 +667,7 @@ function saveWidgetState(widget) {
   }
 
   function captureSelection(left, top, width, height) {
+    DBG('captureSelection sending to BG:', { left, top, width, height });
     // Send coordinates to background to capture
     chrome.runtime.sendMessage({
       action: "capture_area",
