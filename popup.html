@@ -6,27 +6,42 @@
   <title>Glance</title>
 </head>
 <body>
-  <div class="header">
-    <div class="title">Glance</div>
-    <div class="controls">
-      <label class="switch" title="Toggle Extension">
-        <input type="checkbox" id="toggle-extension" checked>
-        <span class="slider"></span>
-      </label>
+  <div class="popup-shell">
+    <div class="header">
+      <div class="brand">
+        <span class="logo-mark">◈</span>
+        <span class="title">Glance</span>
+      </div>
+      <div id="status-pill" class="status-pill active">
+        <span class="dot"></span>
+        <span>Active</span>
+      </div>
     </div>
-  </div>
-  
-  <div class="content">
-    <div class="workspace-controls" style="display: flex; gap: 10px; margin-bottom: 10px;">
-      <button id="save-workspace" class="clear-btn">Save Workspace</button>
-      <button id="load-workspace" class="clear-btn">Load Workspace</button>
+
+    <div class="content">
+      <div class="section-header">
+        <span class="section-title">Active Snips <span id="active-count" class="count-badge">0</span></span>
+      </div>
+      <div id="active-snips" class="snip-grid"></div>
+
+      <div class="section-header">
+        <span class="section-title">Saved Library <span id="saved-count" class="count-badge">0</span></span>
+        <button id="clear-all" class="clear-btn">Clear</button>
+      </div>
+      <div id="snips-container" class="snip-grid">
+        <div id="empty-state" class="empty-state">No saved snips yet.</div>
+      </div>
+
+      <div class="workspace-controls">
+        <button id="save-workspace" class="ghost-btn">Save Workspace</button>
+        <button id="load-workspace" class="ghost-btn">Load Workspace</button>
+      </div>
     </div>
-    <div class="section-header">
-      <span>Saved Snips</span>
-      <button id="clear-all" class="clear-btn">Clear All</button>
-    </div>
-    <div id="snips-container" class="snips-container">
-      <div id="empty-state" class="empty-state">No saved snips yet.</div>
+
+    <div class="footer">
+      <span class="shortcut-key">Alt+S</span>
+      <span class="shortcut-text">Snip</span>
+      <a class="help-link" href="https://github.com/HarshalPatel1972/Glance" target="_blank" rel="noreferrer">Help</a>
     </div>
   </div>
   <script src="popup.js"></script>
