@@ -48,8 +48,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   function createWidget(dataUrl, width, height) {
-    // Placeholder for next step
-    console.log("Image cropped.", {width, height});
+    const widget = document.createElement("div");
+    widget.className = "glance-widget";
+    widget.style.width = width + "px";
+    widget.style.height = height + "px";
+    // Set initial position centered
+    widget.style.left = Math.max(10, (window.innerWidth - width) / 2) + "px";
+    widget.style.top = Math.max(10, (window.innerHeight - height) / 2) + "px";
+
+    const img = document.createElement("img");
+    img.className = "glance-widget-img";
+    img.src = dataUrl;
+    widget.appendChild(img);
+
+    document.body.appendChild(widget);
   }
 
   function createOverlay() {
