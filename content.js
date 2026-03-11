@@ -16,13 +16,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       createOverlay();
     } else if (request.action === "crop_image") {
       cropImage(request.dataUrl, request.area, request.devicePixelRatio);
-    }
-  });
-
-  function cropImage(dataUrl, area, dpr) {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
+    } else if (request.action === "inject_snip") {
+      // Re-inject saved snip
+      const img = new Image();
+      img.onload = () => {
+        createWidget(request.image, img.width, img.height);
+      };
+      img.src = request.image;
       const ctx = canvas.getContext('2d');
 
       canvas.width = area.width;

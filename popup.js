@@ -34,6 +34,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
       item.appendChild(img);
       item.appendChild(info);
+      
+      item.addEventListener("click", () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs.length > 0) {
+            // Make sure content script is available, then send message
+            chrome.scripting.executeScript({
+              target: { tabId: tabs[0].id },
+              files: ["content.js"]
+            }).then(() => {
+              chrome.scripting.insertCSS({
+                target: { tabId: tabs[0].id },
+                files: ["content.css"]
+              });
+              
+              chrome.tabs.sendMessage(tabs[0].id, {
+                action: "inject_snip",
+                image: snip.image
+              });
+            }).catch(err => console.log(err));
+          }
+        });
+      });
 
       container.appendChild(item);
     });
