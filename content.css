@@ -1,0 +1,12 @@
+/* Overlay during selection */
+#glance-snipping-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 2147483646; /* One less than widget */
+  cursor: crosshair;
+  user-select: none;
+}
