@@ -711,6 +711,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     };
 
+    const openLightbox = () => {
+      const lightbox = document.createElement('div');
+      lightbox.className = 'glance-lightbox';
+      lightbox.innerHTML = `
+        <button class="glance-lightbox-close" title="Close">${icon('close')}</button>
+        <img class="glance-lightbox-image" src="${image}" alt="Snip preview" />
+        <div class="glance-lightbox-actions">
+          <button class="glance-btn" data-act="copy" title="Copy">${icon('copy')}</button>
+          <button class="glance-btn" data-act="share" title="Share">${icon('share')}</button>
+          <button class="glance-btn" data-act="download" title="Download">${icon('download')}</button>
+        </div>
+      `;
+
+      const closeLightbox = () => {
+        lightbox.classList.add('closing');
+        setTimeout(() => lightbox.remove(), 150);
+      };
+
+      lightbox.querySelector('.glance-lightbox-close').addEventListener('click', closeLightbox);
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) closeLightbox();
+      });
+      lightbox.querySelector('[data-act="copy"]').addEventListener('click', () => copyBtn.click());
+      lightbox.querySelector('[data-act="download"]').addEventListener('click', () => downloadBtn.click());
+      lightbox.querySelector('[data-act="share"]').addEventListener('click', () => shareBtn.click());
+      document.body.appendChild(lightbox);
+      requestAnimationFrame(() => lightbox.classList.add('show'));
+    };
+
     minBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       toggleCollapsed();
@@ -721,11 +750,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (isCollapsed) {
         toggleCollapsed();
       }
+      openLightbox();
     });
 
     widget.addEventListener("dblclick", (e) => {
       if(e.target.closest(".glance-btn") || e.target.closest(".glance-opacity-slider") || widget.classList.contains("drawing-mode")) return;
-      toggleCollapsed();
+      openLightbox();
     });
 
     // Assign ID to widget for session tracking
