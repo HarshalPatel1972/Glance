@@ -59,6 +59,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const toolbar = document.createElement("div");
     toolbar.className = "glance-widget-toolbar";
 
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "glance-btn glance-save-btn";
+    saveBtn.innerHTML = "🔖";
+    saveBtn.title = "Save Snip";
+    saveBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      saveSnip(dataUrl);
+      saveBtn.innerHTML = "✓";
+      setTimeout(() => saveBtn.innerHTML = "🔖", 1500);
+    });
+
     const closeBtn = document.createElement("button");
     closeBtn.className = "glance-btn glance-close-btn";
     closeBtn.innerHTML = "✕";
@@ -68,6 +79,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       widget.remove();
     });
 
+    toolbar.appendChild(saveBtn);
     toolbar.appendChild(closeBtn);
     widget.appendChild(toolbar);
 
@@ -184,6 +196,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       overlayContent = null;
       selectionBox = null;
     }
+  }
+
+  function saveSnip(dataUrl) {
+    const snip = {
+      id: Date.now().toString(),
+      image: dataUrl,
+      timestamp: Date.now(),
+      url: window.location.href
+    };
+
+    chrome.storage.local.get({ savedSnips: [] }, (result) => {
+      let snips = result.savedSnips;
+      snips.unshift(snip); // add to front
+      
+      // Limit to 20 snips
+      if (snips.length > 20) {
+        snips = snips.slice(0, 20);
+      }
+      
+      chrome.storage.local.set({ savedSnips: snips });
+    });
   }
 
   function captureSelection(left, top, width, height) {
