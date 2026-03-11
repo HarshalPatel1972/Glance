@@ -156,7 +156,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     overlayContent.addEventListener("mousemove", onMouseMove);
     overlayContent.addEventListener("mouseup", onMouseUp);
 
+    document.addEventListener("keydown", handleKeyDown);
+
     document.body.appendChild(overlayContent);
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === "Escape") {
+      closeOverlay();
+    }
   }
 
   function onMouseDown(e) {
@@ -207,6 +215,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   function closeOverlay() {
     isSnipping = false;
+    document.removeEventListener("keydown", handleKeyDown);
     if (overlayContent && overlayContent.parentNode) {
       overlayContent.parentNode.removeChild(overlayContent);
       overlayContent = null;
