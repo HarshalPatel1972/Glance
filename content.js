@@ -1,9 +1,13 @@
-if (typeof window.glanceSnippingInitialized === 'undefined') {
-  window.glanceSnippingInitialized = true;
+if (!document.getElementById('glance-init-flag')) {
+  const _f = document.createElement('div');
+  _f.id = 'glance-init-flag';
+  _f.style.display = 'none';
+  document.documentElement.appendChild(_f);
   const DBG = (...a) => console.log('[Glance CS]', ...a);
   DBG('Content script initialized on', window.location.href);
   
-  let isSnipping = false;
+  const isSnipping = () => document.documentElement.dataset.glanceSnipping === '1';
+  const setSnipping = (v) => { document.documentElement.dataset.glanceSnipping = v ? '1' : '0'; };
   let overlayContent = null;
   let selectionBox = null;
   
@@ -14,19 +18,19 @@ if (typeof window.glanceSnippingInitialized === 'undefined') {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     DBG('Message received:', request.action);
     if (request.action === "activate_snip") {
-      if (isSnipping) { DBG('Already snipping, ignoring'); return; }
-      isSnipping = true;
+      if (isSnipping()) { DBG('Already snipping, ignoring'); return; }
+      setSnipping(true);
 
       chrome.storage.session.get({ activeSnips: [] }, (result) => {
         DBG('Active snips count:', result.activeSnips.length);
         if (result.activeSnips.length >= 5) {
           showToast("Maximum 5 snips active. Close one to continue.");
           DBG('Snip limit reached');
-          isSnipping = false;
+          setSnipping(false);
           return;
         }
         DBG('Creating overlay...');
-        try { createOverlay(); } catch(e) { console.error('[Glance CS] createOverlay error:', e); isSnipping = false; }
+        try { createOverlay(); } catch(e) { console.error('[Glance CS] createOverlay error:', e); setSnipping(false); }
       });
     } else if (request.action === "crop_image") {
       cropImage(request.dataUrl, request.area, request.devicePixelRatio, request.reframeId);
@@ -639,7 +643,7 @@ function saveWidgetState(widget) {
   }
 
   function closeOverlay() {
-    isSnipping = false;
+    setSnipping(false);
     document.removeEventListener("keydown", handleKeyDown);
     if (overlayContent && overlayContent.parentNode) {
       overlayContent.parentNode.removeChild(overlayContent);
