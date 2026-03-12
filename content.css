@@ -250,8 +250,17 @@
 .glance-widget.glance-dragging {
   border-color: var(--g-coral);
   transform: scale(1.01);
-  box-shadow: var(--shadow-float), 0 0 32px rgba(255,107,107,0.28),
+  box-shadow: var(--shadow-float), 0 0 36px rgba(255,107,107,0.32),
               inset 0 1px 0 rgba(255,255,255,0.09);
+  transition: transform var(--dur-fast) var(--ease-out-expo),
+              border-color var(--dur-fast) var(--ease-smooth),
+              box-shadow var(--dur-fast) var(--ease-smooth);
+}
+
+/* Settle after drag release */
+.glance-widget.glance-drag-settle {
+  transition: transform var(--dur-normal) var(--ease-spring),
+              box-shadow var(--dur-normal) var(--ease-smooth) !important;
 }
 
 /* ── Glow Pulse (runs once on entrance) ── */
@@ -331,6 +340,27 @@
   border-bottom: 1px solid var(--g-rim);
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   z-index: 2;
+  overflow: hidden; /* clips shimmer on drag */
+}
+
+/* Coral shimmer sweeps across toolbar once on drag start */
+.glance-widget.glance-dragging .glance-widget-toolbar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,107,107,0.12) 50%,
+    transparent 100%);
+  transform: translateX(-100%);
+  animation: toolbarShimmer var(--dur-slow) var(--ease-smooth) 1 forwards;
+  pointer-events: none;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+}
+
+@keyframes toolbarShimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(120%); }
 }
 
 .glance-toolbar-left,
@@ -941,7 +971,8 @@
   .glance-widget-thumbnail,
   .glance-title-hidden,
   .glance-snip-title:not(.glance-title-hidden),
-  .glance-close-btn .glance-icon {
+  .glance-close-btn .glance-icon,
+  .glance-widget.glance-dragging .glance-widget-toolbar::after {
     transform: none !important;
   }
 
