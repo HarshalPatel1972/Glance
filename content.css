@@ -697,6 +697,25 @@
 .glance-annotation-sidebar .glance-btn {
   width: 32px;
   height: 32px;
+  border-radius: var(--r-sm);
+}
+
+/* Active tool state driven by mode classes on widget */
+.glance-widget.drawing-mode .glance-annotation-sidebar .glance-draw-btn,
+.glance-widget.drawing-mode .glance-annotation-sidebar .glance-marker-btn,
+.glance-widget.text-mode .glance-annotation-sidebar .glance-text-btn {
+  background: var(--g-coral-subtle) !important;
+  color: var(--g-coral) !important;
+  box-shadow: inset 2px 0 0 var(--g-coral) !important;
+}
+
+/* Undo button */
+.glance-undo-btn {
+  color: var(--g-text-mid);
+}
+
+.glance-undo-btn:hover {
+  color: var(--g-text-bright);
 }
 
 .glance-annotation-options {
@@ -714,6 +733,34 @@
 .glance-stroke-slider {
   width: 90px;
   accent-color: var(--g-coral);
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  background: var(--g-rim);
+  border-radius: var(--r-pill);
+  outline: none;
+  cursor: pointer;
+}
+
+.glance-stroke-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--g-coral);
+  box-shadow: 0 0 6px var(--g-coral-glow);
+  cursor: pointer;
+}
+
+.glance-stroke-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--g-coral);
+  box-shadow: 0 0 6px var(--g-coral-glow);
+  cursor: pointer;
+  border: none;
 }
 
 .glance-color-swatches {
