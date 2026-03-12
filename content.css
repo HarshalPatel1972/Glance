@@ -20,8 +20,7 @@
   width: 100vw; height: 100vh;
   z-index: 2147483640;
   user-select: none;
-  opacity: 0;
-  animation: glance-overlay-in var(--dur-fast) var(--ease-smooth) forwards;
+  opacity: 1; /* Instant appearance */
   /* Custom SVG crosshair: thin white lines + coral center dot */
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cline x1='12' y1='0' x2='12' y2='10' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='12' y1='14' x2='12' y2='24' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='0' y1='12' x2='10' y2='12' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='14' y1='12' x2='24' y2='12' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='2.5' fill='%23FF6B6B'/%3E%3C/svg%3E") 12 12, crosshair;
 }
@@ -138,10 +137,7 @@
   border-bottom-width: 3px; border-right-width: 3px;
 }
 
-@keyframes glance-overlay-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+/* (Removed unused overlay animation) */
 
 #glance-flash {
   position: fixed;
@@ -332,45 +328,53 @@
 .glance-resize-ne,
 .glance-resize-se,
 .glance-resize-sw {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background: var(--g-grad-coral);
-  border-radius: 3px;
-  box-shadow: 0 0 8px var(--g-coral-glow);
+  border: 2px solid var(--g-base);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--g-coral-glow);
+  opacity: 0.8;
 }
 
 /* Edge handles — slim rectangles */
 .glance-resize-n,
 .glance-resize-s {
-  width: 24px;
-  height: 6px;
+  width: 28px;
+  height: 8px;
   background: var(--g-coral);
   border-radius: var(--r-pill);
+  opacity: 0.6;
 }
 
 .glance-resize-e,
 .glance-resize-w {
-  width: 6px;
-  height: 24px;
+  width: 8px;
+  height: 28px;
   background: var(--g-coral);
   border-radius: var(--r-pill);
+  opacity: 0.6;
 }
 
 .glance-widget:hover .glance-resize-n,
 .glance-widget:hover .glance-resize-s,
 .glance-widget:hover .glance-resize-e,
 .glance-widget:hover .glance-resize-w {
-  opacity: 0.6;
+  opacity: 1;
 }
 
-.glance-resize-nw { top: -5px;  left: -5px;  cursor: nwse-resize; }
-.glance-resize-n  { top: -3px;  left: calc(50% - 12px); cursor: ns-resize; }
-.glance-resize-ne { top: -5px;  right: -5px; cursor: nesw-resize; }
-.glance-resize-e  { top: calc(50% - 12px); right: -3px; cursor: ew-resize; }
-.glance-resize-se { bottom: -5px; right: -5px; cursor: nwse-resize; }
-.glance-resize-s  { bottom: -3px; left: calc(50% - 12px); cursor: ns-resize; }
-.glance-resize-sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
-.glance-resize-w  { top: calc(50% - 12px); left: -3px; cursor: ew-resize; }
+.glance-widget:hover .glance-resize-handle {
+  transform: scale(1.1);
+}
+
+.glance-resize-nw { top: -6px;  left: -6px;  cursor: nwse-resize; }
+.glance-resize-n  { top: -4px;  left: calc(50% - 14px); cursor: ns-resize; }
+.glance-resize-ne { top: -6px;  right: -6px; cursor: nesw-resize; }
+.glance-resize-e  { top: calc(50% - 14px); right: -4px; cursor: ew-resize; }
+.glance-resize-se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+.glance-resize-s  { bottom: -4px; left: calc(50% - 14px); cursor: ns-resize; }
+.glance-resize-sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.glance-resize-w  { top: calc(50% - 14px); left: -4px; cursor: ew-resize; }
 
 /* ── Toolbar ── */
 .glance-widget-toolbar {
@@ -418,17 +422,21 @@
 /* ── Action Bar ── */
 .glance-widget-actionbar {
   position: absolute;
-  left: 0; right: 0;
-  top: 38px;
-  height: 34px;
+  left: 50%;
+  top: calc(100% + 12px);
+  height: 40px;
+  width: max-content;
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 0 8px;
-  background: var(--g-raised);
-  border-bottom: 1px solid var(--g-rim);
+  gap: 6px;
+  padding: 0 10px;
+  background: var(--g-overlay);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--g-rim);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-float);
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateX(-50%) translateY(-10px);
   transition: opacity var(--dur-fast) var(--ease-smooth),
               transform var(--dur-normal) var(--ease-spring);
   z-index: 2;
@@ -437,7 +445,7 @@
 
 .glance-widget:hover .glance-widget-actionbar {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
   pointer-events: auto;
 }
 
@@ -500,14 +508,19 @@
 
 /* Action bar buttons */
 .glance-widget-actionbar .glance-btn {
-  width: 28px;
-  height: 28px;
-  color: var(--g-text-dim);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--g-raised);
+  color: var(--g-text-bright);
+  border: 1px solid var(--g-rim);
 }
 
 .glance-widget-actionbar .glance-btn:hover {
   background: var(--g-coral-subtle);
+  border-color: var(--g-coral);
   color: var(--g-coral);
+  transform: scale(1.1);
 }
 
 .glance-widget-actionbar .glance-icon {

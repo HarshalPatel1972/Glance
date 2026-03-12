@@ -79,17 +79,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "activate_snip") {
       if (isSnipping()) { DBG('Already snipping, ignoring'); return; }
       setSnipping(true);
+      
+      DBG('Creating overlay (instant)...');
+      try { createOverlay(); } catch(e) { console.error('[Glance CS] createOverlay error:', e); setSnipping(false); }
 
       getActiveSnips((activeSnips) => {
         DBG('Active snips count:', activeSnips.length);
-        if (activeSnips.length >= 5) {
-          showToast("Maximum 5 snips active. Close one to continue.", 'warning');
+        if (activeSnips.length >= 6) {
+          showToast("Maximum 6 snips active. Close one to continue.", 'warning');
           DBG('Snip limit reached');
+          closeOverlay();
           setSnipping(false);
           return;
         }
-        DBG('Creating overlay...');
-        try { createOverlay(); } catch(e) { console.error('[Glance CS] createOverlay error:', e); setSnipping(false); }
       });
     } else if (request.action === "crop_image") {
       cropImage(request.dataUrl, request.area, request.devicePixelRatio, request.reframeId);
@@ -945,6 +947,9 @@ function saveWidgetState(widget) {
     document.addEventListener("keydown", handleKeyDown);
 
     document.body.appendChild(overlayContent);
+    
+    // Instantly mask the whole screen before user starts drawing
+    updateOverlayMasks(window.innerWidth / 2, window.innerHeight / 2, 0, 0);
   }
 
   function updateOverlayMasks(left, top, width, height) {
@@ -1028,7 +1033,7 @@ function saveWidgetState(widget) {
     const height = Math.abs(endY - startY);
     
     // Only capture if selection is large enough
-    if (width > 10 && height > 10) {
+    if (width > 24 && height > 24) {
       // Hide the overlay to avoid tinting the screenshot
       if (overlayContent) overlayContent.style.visibility = 'hidden';
       
