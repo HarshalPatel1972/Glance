@@ -111,7 +111,7 @@
   position: absolute;
   width: 14px;
   height: 14px;
-  border-color: var(--g-coral);
+  border-color: var(--g-text);
   border-style: solid;
   border-width: 0;
   border-radius: 2px;
@@ -289,9 +289,9 @@
 }
 
 .glance-widget.glance-dragging {
-  border-color: var(--g-coral);
+  border-color: var(--g-rim-bright);
   transform: scale(1.01);
-  box-shadow: var(--shadow-float), 0 0 36px rgba(255,107,107,0.32),
+  box-shadow: var(--shadow-float), 0 0 36px rgba(255,255,255,0.2),
               inset 0 1px 0 rgba(255,255,255,0.09);
   transition: transform var(--dur-fast) var(--ease-out-expo),
               border-color var(--dur-fast) var(--ease-smooth),
@@ -323,17 +323,17 @@
   opacity: 1;
 }
 
-/* Corner handles — coral gradient filled */
+/* Corner handles — white filled */
 .glance-resize-nw,
 .glance-resize-ne,
 .glance-resize-se,
 .glance-resize-sw {
   width: 12px;
   height: 12px;
-  background: var(--g-grad-coral);
+  background: var(--g-text);
   border: 2px solid var(--g-base);
   border-radius: 50%;
-  box-shadow: 0 0 6px var(--g-coral-glow);
+  box-shadow: 0 0 6px rgba(255,255,255,0.4);
   opacity: 0.8;
 }
 
@@ -342,7 +342,7 @@
 .glance-resize-s {
   width: 28px;
   height: 8px;
-  background: var(--g-coral);
+  background: var(--g-text);
   border-radius: var(--r-pill);
   opacity: 0.6;
 }
@@ -351,7 +351,7 @@
 .glance-resize-w {
   width: 8px;
   height: 28px;
-  background: var(--g-coral);
+  background: var(--g-text);
   border-radius: var(--r-pill);
   opacity: 0.6;
 }
@@ -424,12 +424,12 @@
   position: absolute;
   left: 50%;
   top: calc(100% + 12px);
-  height: 40px;
+  height: 52px;
   width: max-content;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 10px;
+  gap: 10px;
+  padding: 0 14px;
   background: var(--g-overlay);
   backdrop-filter: blur(20px);
   border: 1px solid var(--g-rim);
@@ -508,24 +508,33 @@
 
 /* Action bar buttons */
 .glance-widget-actionbar .glance-btn {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--g-raised);
-  color: var(--g-text-bright);
-  border: 1px solid var(--g-rim);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform var(--dur-fast), filter var(--dur-fast), box-shadow var(--dur-fast);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
+.glance-widget-actionbar .glance-annotate-trigger { background: #e74c3c; } /* Red */
+.glance-widget-actionbar .glance-extract-trigger  { background: #9b59b6; } /* Purple */
+.glance-widget-actionbar .glance-copy-btn         { background: #3498db; } /* Blue */
+.glance-widget-actionbar .glance-share-btn        { background: #1abc9c; } /* Turquoise */
+.glance-widget-actionbar .glance-video-btn        { background: #f39c12; } /* Orange */
+.glance-widget-actionbar .glance-download-btn     { background: #d35400; } /* Dark Orange */
+.glance-widget-actionbar .glance-reframe-btn      { background: #34495e; } /* Dark Blue/Gray */
+.glance-widget-actionbar .glance-save-btn         { background: #27ae60; } /* Green */
+
 .glance-widget-actionbar .glance-btn:hover {
-  background: var(--g-coral-subtle);
-  border-color: var(--g-coral);
-  color: var(--g-coral);
-  transform: scale(1.1);
+  transform: scale(1.15) translateY(-2px);
+  filter: brightness(1.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .glance-widget-actionbar .glance-icon {
-  width: 15px;
-  height: 15px;
+  width: 20px;
+  height: 20px;
 }
 
 /* Success / bounce state */
