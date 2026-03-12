@@ -5,56 +5,71 @@
 }
 
 :where(button, input, textarea, select, a, [contenteditable="true"]):focus-visible {
-  outline: 2px solid var(--glance-accent);
-  outline-offset: 2px;
+  outline: 2px solid var(--g-coral);
+  outline-offset: 3px;
 }
 
 body {
   margin: 0;
   padding: 20px;
   max-width: 400px;
-  background: var(--glance-bg);
-  color: var(--glance-text-primary);
-  font-family: var(--font-ui);
+  background: var(--g-base);
+  color: var(--g-text-bright);
+  font-family: var(--font-text);
+  -webkit-font-smoothing: antialiased;
 }
 
 h2 {
   margin: 0 0 16px;
   font-size: 18px;
   font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--g-text-bright);
 }
 
 label {
   display: block;
   margin-bottom: 12px;
-  color: var(--glance-text-secondary);
+  color: var(--g-text-mid);
+  font-size: 13px;
 }
 
 input[type="range"],
 input[type="number"] {
   margin-top: 6px;
+  accent-color: var(--g-coral);
 }
 
 button {
   padding: 8px 16px;
   cursor: pointer;
-  background: var(--glance-accent);
-  color: var(--glance-text-primary);
-  border: 1px solid var(--glance-accent-hover);
-  border-radius: var(--radius-sm);
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  background: var(--g-grad-coral);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: var(--font-text);
+  font-weight: 600;
+  font-size: 13px;
+  transition: filter var(--dur-fast) var(--ease-smooth),
+              transform var(--dur-fast) var(--ease-smooth);
+  box-shadow: 0 2px 12px var(--g-coral-glow);
 }
 
 button:hover {
-  background: var(--glance-accent-hover);
+  filter: brightness(1.1);
 }
 
 button:active {
-  transform: scale(0.94);
+  transform: scale(0.96);
 }
 
 a {
-  color: var(--glance-text-secondary);
+  color: var(--g-text-coral);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--g-rose);
 }
 
 #options-toast {
@@ -64,13 +79,17 @@ a {
   transform: translate(-50%, 10px);
   opacity: 0;
   pointer-events: none;
-  background: var(--glance-surface);
-  border: 1px solid var(--glance-border);
-  color: var(--glance-text-primary);
+  background: var(--g-overlay);
+  border: 1px solid var(--g-rim);
+  color: var(--g-text-bright);
   padding: 10px 18px;
-  border-radius: 100px;
-  box-shadow: var(--shadow-toolbar);
-  transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-toast);
+  backdrop-filter: blur(20px);
+  font-family: var(--font-text);
+  font-size: 13px;
+  transition: opacity var(--dur-normal) var(--ease-smooth),
+              transform var(--dur-normal) var(--ease-smooth);
 }
 
 #options-toast.show {
