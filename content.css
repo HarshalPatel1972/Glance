@@ -895,6 +895,7 @@
   border-radius: 50%;
   border: 1px solid var(--g-rim);
   background: var(--g-overlay);
+  backdrop-filter: blur(20px);
   color: var(--g-text-mid);
   display: flex;
   align-items: center;
@@ -908,7 +909,7 @@
 .glance-lightbox-close:hover {
   border-color: var(--g-coral);
   color: var(--g-coral);
-  box-shadow: 0 0 12px var(--g-coral-glow);
+  box-shadow: 0 0 16px var(--g-coral-glow);
 }
 
 .glance-lightbox-actions {
@@ -923,7 +924,14 @@
   border: 1px solid var(--g-rim);
   background: var(--g-overlay);
   backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-toast);
+  box-shadow: var(--shadow-toast),
+              inset 0 1px 0 rgba(255,255,255,0.06);
+  animation: lightboxActionsIn var(--dur-normal) var(--ease-out-expo) var(--dur-fast) both;
+}
+
+@keyframes lightboxActionsIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .glance-lightbox-actions .glance-btn {
