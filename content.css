@@ -1,11 +1,20 @@
-@import url('./design-system.css');
+@import url("./design-system.css");
 
 /* ── Reset ── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-:where(button, input, textarea, select, a, [contenteditable="true"]):focus-visible {
+:where(
+  button,
+  input,
+  textarea,
+  select,
+  a,
+  [contenteditable="true"]
+):focus-visible {
   outline: 2px solid var(--g-coral);
   outline-offset: 3px;
 }
@@ -16,13 +25,18 @@
 
 #glance-snipping-overlay {
   position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   z-index: 2147483640;
   user-select: none;
   opacity: 1; /* Instant appearance */
   /* Custom SVG crosshair: thin white lines + coral center dot */
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cline x1='12' y1='0' x2='12' y2='10' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='12' y1='14' x2='12' y2='24' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='0' y1='12' x2='10' y2='12' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='14' y1='12' x2='24' y2='12' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='2.5' fill='%23FF6B6B'/%3E%3C/svg%3E") 12 12, crosshair;
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cline x1='12' y1='0' x2='12' y2='10' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='12' y1='14' x2='12' y2='24' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='0' y1='12' x2='10' y2='12' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='14' y1='12' x2='24' y2='12' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='2.5' fill='%23FF6B6B'/%3E%3C/svg%3E")
+      12 12,
+    crosshair;
 }
 
 #glance-selection-box {
@@ -36,7 +50,7 @@
 
 /* Gradient border via pseudo-element */
 #glance-selection-box::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -2px;
   border-radius: 2px;
@@ -50,10 +64,14 @@
   padding: 2px;
 }
 
-.glance-overlay-mask {
+.glance-overlay-mask-gpu {
   position: absolute;
-  background: rgba(0,0,0,0.55);
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.55);
   pointer-events: none;
+  /* Force GPU composite for oil-smooth dragging logic */
+  will-change: transform, width, height;
 }
 
 #glance-instruction-label {
@@ -118,41 +136,36 @@
 }
 
 .glance-corner-tl {
-  top: -2px; left: -2px;
-  border-top-width: 3px; border-left-width: 3px;
+  top: -2px;
+  left: -2px;
+  border-top-width: 3px;
+  border-left-width: 3px;
 }
 
 .glance-corner-tr {
-  top: -2px; right: -2px;
-  border-top-width: 3px; border-right-width: 3px;
+  top: -2px;
+  right: -2px;
+  border-top-width: 3px;
+  border-right-width: 3px;
 }
 
 .glance-corner-bl {
-  bottom: -2px; left: -2px;
-  border-bottom-width: 3px; border-left-width: 3px;
+  bottom: -2px;
+  left: -2px;
+  border-bottom-width: 3px;
+  border-left-width: 3px;
 }
 
 .glance-corner-br {
-  bottom: -2px; right: -2px;
-  border-bottom-width: 3px; border-right-width: 3px;
+  bottom: -2px;
+  right: -2px;
+  border-bottom-width: 3px;
+  border-right-width: 3px;
 }
 
 /* (Removed unused overlay animation) */
 
-#glance-flash {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(ellipse at center, rgba(255,143,171,0.55) 0%, rgba(255,107,107,0.35) 50%, transparent 80%);
-  z-index: 2147483647;
-  opacity: 1;
-  pointer-events: none;
-  animation: glance-flash-anim 0.28s var(--ease-out-expo);
-}
-
-@keyframes glance-flash-anim {
-  0%   { opacity: 1; }
-  100% { opacity: 0; }
-}
+/* (Flash removed as requested) */
 
 /* ═══════════════════════════════════════════════════════════════
    TOAST NOTIFICATIONS
@@ -178,16 +191,18 @@
   border-radius: var(--r-pill);
   background: var(--g-overlay);
   border: 1px solid var(--g-rim);
-  box-shadow: var(--shadow-toast),
-              inset 0 1px 0 rgba(255,255,255,0.08);
+  box-shadow:
+    var(--shadow-toast),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px);
   color: var(--g-text-bright);
   font: 450 13px var(--font-text);
   opacity: 0;
   transform: translateY(16px);
-  transition: transform var(--dur-normal) var(--ease-spring),
-              opacity var(--dur-normal) var(--ease-smooth),
-              scale var(--dur-normal) var(--ease-smooth);
+  transition:
+    transform var(--dur-normal) var(--ease-spring),
+    opacity var(--dur-normal) var(--ease-smooth),
+    scale var(--dur-normal) var(--ease-smooth);
   pointer-events: none;
   position: relative;
   white-space: nowrap;
@@ -199,13 +214,13 @@
   opacity: 0.75;
 }
 
-#glance-toast-stack .glance-toast.show:nth-last-child(n+3) {
+#glance-toast-stack .glance-toast.show:nth-last-child(n + 3) {
   transform: scale(0.92) translateY(4px);
   opacity: 0.55;
 }
 
 .glance-toast::before {
-  content: '';
+  content: "";
   width: 3px;
   align-self: stretch;
   border-radius: var(--r-pill);
@@ -221,8 +236,9 @@
 .glance-toast.hide {
   opacity: 0;
   transform: translateY(8px);
-  transition: transform var(--dur-fast) ease-in,
-              opacity var(--dur-fast) ease-in;
+  transition:
+    transform var(--dur-fast) ease-in,
+    opacity var(--dur-fast) ease-in;
 }
 
 .glance-toast-icon {
@@ -230,15 +246,31 @@
   flex-shrink: 0;
 }
 
-.glance-toast-success::before { background: var(--g-success); }
-.glance-toast-warning::before { background: var(--g-warning); }
-.glance-toast-error::before   { background: var(--g-danger); }
-.glance-toast-info::before    { background: var(--g-coral); }
+.glance-toast-success::before {
+  background: var(--g-success);
+}
+.glance-toast-warning::before {
+  background: var(--g-warning);
+}
+.glance-toast-error::before {
+  background: var(--g-danger);
+}
+.glance-toast-info::before {
+  background: var(--g-coral);
+}
 
-.glance-toast-success .glance-toast-icon { color: var(--g-success); }
-.glance-toast-warning .glance-toast-icon { color: var(--g-warning); }
-.glance-toast-error   .glance-toast-icon { color: var(--g-danger); }
-.glance-toast-info    .glance-toast-icon { color: var(--g-coral); }
+.glance-toast-success .glance-toast-icon {
+  color: var(--g-success);
+}
+.glance-toast-warning .glance-toast-icon {
+  color: var(--g-warning);
+}
+.glance-toast-error .glance-toast-icon {
+  color: var(--g-danger);
+}
+.glance-toast-info .glance-toast-icon {
+  color: var(--g-coral);
+}
 
 /* ═══════════════════════════════════════════════════════════════
    FLOATING WIDGET — Shell
@@ -250,14 +282,17 @@
   background: var(--g-grad-surface);
   border-radius: var(--r-xl);
   border: 1px solid var(--g-rim);
-  box-shadow: var(--shadow-float), var(--shadow-glow),
-              inset 0 1px 0 rgba(255,255,255,0.09);
+  box-shadow:
+    var(--shadow-float),
+    var(--shadow-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
   backdrop-filter: blur(40px) saturate(160%);
   overflow: visible;
   box-sizing: border-box;
-  transition: border-color var(--dur-fast) var(--ease-smooth),
-              box-shadow var(--dur-normal) var(--ease-smooth),
-              transform var(--dur-fast) var(--ease-smooth);
+  transition:
+    border-color var(--dur-fast) var(--ease-smooth),
+    box-shadow var(--dur-normal) var(--ease-smooth),
+    transform var(--dur-fast) var(--ease-smooth);
 }
 
 /* ── Entrance / Exit ── */
@@ -269,18 +304,20 @@
 .glance-widget.glance-widget-ready {
   opacity: 1;
   transform: scale(1) translateY(0);
-  transition: transform var(--dur-spring) var(--ease-spring),
-              opacity var(--dur-spring) var(--ease-spring),
-              box-shadow var(--dur-normal) var(--ease-smooth),
-              border-color var(--dur-fast) var(--ease-smooth);
+  transition:
+    transform var(--dur-spring) var(--ease-spring),
+    opacity var(--dur-spring) var(--ease-spring),
+    box-shadow var(--dur-normal) var(--ease-smooth),
+    border-color var(--dur-fast) var(--ease-smooth);
   animation: glancePulse var(--dur-slow) var(--ease-smooth) forwards;
 }
 
 .glance-widget.glance-widget-exit {
   opacity: 0;
   transform: scale(0.88) translateY(8px);
-  transition: opacity var(--dur-fast) ease-in,
-              transform var(--dur-fast) ease-in;
+  transition:
+    opacity var(--dur-fast) ease-in,
+    transform var(--dur-fast) ease-in;
 }
 
 /* ── Hover / Drag ── */
@@ -291,24 +328,43 @@
 .glance-widget.glance-dragging {
   border-color: var(--g-rim-bright);
   transform: scale(1.01);
-  box-shadow: var(--shadow-float), 0 0 36px rgba(255,255,255,0.2),
-              inset 0 1px 0 rgba(255,255,255,0.09);
-  transition: transform var(--dur-fast) var(--ease-out-expo),
-              border-color var(--dur-fast) var(--ease-smooth),
-              box-shadow var(--dur-fast) var(--ease-smooth);
+  box-shadow:
+    var(--shadow-float),
+    0 0 36px rgba(255, 255, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  transition:
+    transform var(--dur-fast) var(--ease-out-expo),
+    border-color var(--dur-fast) var(--ease-smooth),
+    box-shadow var(--dur-fast) var(--ease-smooth);
 }
 
 /* Settle after drag release */
 .glance-widget.glance-drag-settle {
-  transition: transform var(--dur-normal) var(--ease-spring),
-              box-shadow var(--dur-normal) var(--ease-smooth) !important;
+  transition:
+    transform var(--dur-normal) var(--ease-spring),
+    box-shadow var(--dur-normal) var(--ease-smooth) !important;
 }
 
 /* ── Glow Pulse (runs once on entrance) ── */
 @keyframes glancePulse {
-  0%   { box-shadow: var(--shadow-float), 0 0 0px rgba(255,107,107,0),    inset 0 1px 0 rgba(255,255,255,0.09); }
-  40%  { box-shadow: var(--shadow-float), 0 0 40px rgba(255,107,107,0.3), inset 0 1px 0 rgba(255,255,255,0.09); }
-  100% { box-shadow: var(--shadow-float), var(--shadow-glow),             inset 0 1px 0 rgba(255,255,255,0.09); }
+  0% {
+    box-shadow:
+      var(--shadow-float),
+      0 0 0px rgba(255, 107, 107, 0),
+      inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  }
+  40% {
+    box-shadow:
+      var(--shadow-float),
+      0 0 40px rgba(255, 107, 107, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  }
+  100% {
+    box-shadow:
+      var(--shadow-float),
+      var(--shadow-glow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  }
 }
 
 /* ── Resize Handles ── */
@@ -333,7 +389,7 @@
   background: var(--g-text);
   border: 2px solid var(--g-base);
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(255,255,255,0.4);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
   opacity: 0.8;
 }
 
@@ -367,19 +423,53 @@
   transform: scale(1.1);
 }
 
-.glance-resize-nw { top: -6px;  left: -6px;  cursor: nwse-resize; }
-.glance-resize-n  { top: -4px;  left: calc(50% - 14px); cursor: ns-resize; }
-.glance-resize-ne { top: -6px;  right: -6px; cursor: nesw-resize; }
-.glance-resize-e  { top: calc(50% - 14px); right: -4px; cursor: ew-resize; }
-.glance-resize-se { bottom: -6px; right: -6px; cursor: nwse-resize; }
-.glance-resize-s  { bottom: -4px; left: calc(50% - 14px); cursor: ns-resize; }
-.glance-resize-sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
-.glance-resize-w  { top: calc(50% - 14px); left: -4px; cursor: ew-resize; }
+.glance-resize-nw {
+  top: -6px;
+  left: -6px;
+  cursor: nwse-resize;
+}
+.glance-resize-n {
+  top: -4px;
+  left: calc(50% - 14px);
+  cursor: ns-resize;
+}
+.glance-resize-ne {
+  top: -6px;
+  right: -6px;
+  cursor: nesw-resize;
+}
+.glance-resize-e {
+  top: calc(50% - 14px);
+  right: -4px;
+  cursor: ew-resize;
+}
+.glance-resize-se {
+  bottom: -6px;
+  right: -6px;
+  cursor: nwse-resize;
+}
+.glance-resize-s {
+  bottom: -4px;
+  left: calc(50% - 14px);
+  cursor: ns-resize;
+}
+.glance-resize-sw {
+  bottom: -6px;
+  left: -6px;
+  cursor: nesw-resize;
+}
+.glance-resize-w {
+  top: calc(50% - 14px);
+  left: -4px;
+  cursor: ew-resize;
+}
 
 /* ── Toolbar ── */
 .glance-widget-toolbar {
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 38px;
   display: flex;
   justify-content: space-between;
@@ -394,13 +484,15 @@
 
 /* Coral shimmer sweeps across toolbar once on drag start */
 .glance-widget.glance-dragging .glance-widget-toolbar::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     transparent 0%,
-    rgba(255,107,107,0.12) 50%,
-    transparent 100%);
+    rgba(255, 107, 107, 0.12) 50%,
+    transparent 100%
+  );
   transform: translateX(-100%);
   animation: toolbarShimmer var(--dur-slow) var(--ease-smooth) 1 forwards;
   pointer-events: none;
@@ -408,8 +500,12 @@
 }
 
 @keyframes toolbarShimmer {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(120%); }
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(120%);
+  }
 }
 
 .glance-toolbar-left,
@@ -437,8 +533,9 @@
   box-shadow: var(--shadow-float);
   opacity: 0;
   transform: translateX(-50%) translateY(-10px);
-  transition: opacity var(--dur-fast) var(--ease-smooth),
-              transform var(--dur-normal) var(--ease-spring);
+  transition:
+    opacity var(--dur-fast) var(--ease-smooth),
+    transform var(--dur-normal) var(--ease-spring);
   z-index: 2;
   pointer-events: none;
 }
@@ -477,14 +574,15 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-smooth),
-              color var(--dur-fast) var(--ease-smooth),
-              transform var(--dur-fast) var(--ease-smooth);
+  transition:
+    background var(--dur-fast) var(--ease-smooth),
+    color var(--dur-fast) var(--ease-smooth),
+    transform var(--dur-fast) var(--ease-smooth);
   flex-shrink: 0;
 }
 
 .glance-btn:hover {
-  background: rgba(255,255,255,0.07);
+  background: rgba(255, 255, 255, 0.07);
   color: var(--g-text-bright);
 }
 
@@ -493,7 +591,7 @@
 }
 
 .glance-close-btn:hover {
-  background: rgba(255,95,112,0.15);
+  background: rgba(255, 95, 112, 0.15);
   color: var(--g-danger);
 }
 
@@ -513,23 +611,42 @@
   border-radius: 50%;
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: transform var(--dur-fast), filter var(--dur-fast), box-shadow var(--dur-fast);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition:
+    transform var(--dur-fast),
+    filter var(--dur-fast),
+    box-shadow var(--dur-fast);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-.glance-widget-actionbar .glance-annotate-trigger { background: #e74c3c; } /* Red */
-.glance-widget-actionbar .glance-extract-trigger  { background: #9b59b6; } /* Purple */
-.glance-widget-actionbar .glance-copy-btn         { background: #3498db; } /* Blue */
-.glance-widget-actionbar .glance-share-btn        { background: #1abc9c; } /* Turquoise */
-.glance-widget-actionbar .glance-video-btn        { background: #f39c12; } /* Orange */
-.glance-widget-actionbar .glance-download-btn     { background: #d35400; } /* Dark Orange */
-.glance-widget-actionbar .glance-reframe-btn      { background: #34495e; } /* Dark Blue/Gray */
-.glance-widget-actionbar .glance-save-btn         { background: #27ae60; } /* Green */
+.glance-widget-actionbar .glance-annotate-trigger {
+  background: #e74c3c;
+} /* Red */
+.glance-widget-actionbar .glance-extract-trigger {
+  background: #9b59b6;
+} /* Purple */
+.glance-widget-actionbar .glance-copy-btn {
+  background: #3498db;
+} /* Blue */
+.glance-widget-actionbar .glance-share-btn {
+  background: #1abc9c;
+} /* Turquoise */
+.glance-widget-actionbar .glance-video-btn {
+  background: #f39c12;
+} /* Orange */
+.glance-widget-actionbar .glance-download-btn {
+  background: #d35400;
+} /* Dark Orange */
+.glance-widget-actionbar .glance-reframe-btn {
+  background: #34495e;
+} /* Dark Blue/Gray */
+.glance-widget-actionbar .glance-save-btn {
+  background: #27ae60;
+} /* Green */
 
 .glance-widget-actionbar .glance-btn:hover {
   transform: scale(1.15) translateY(-2px);
   filter: brightness(1.15);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .glance-widget-actionbar .glance-icon {
@@ -544,9 +661,21 @@
 }
 
 @keyframes glanceCopyFlash {
-  0%   { color: var(--g-coral); transform: scale(1.18); filter: drop-shadow(0 0 6px var(--g-coral-glow)); }
-  60%  { color: var(--g-coral); transform: scale(1.05); filter: drop-shadow(0 0 3px var(--g-coral-glow)); }
-  100% { color: var(--g-success);  transform: scale(1);    filter: none; }
+  0% {
+    color: var(--g-coral);
+    transform: scale(1.18);
+    filter: drop-shadow(0 0 6px var(--g-coral-glow));
+  }
+  60% {
+    color: var(--g-coral);
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 3px var(--g-coral-glow));
+  }
+  100% {
+    color: var(--g-success);
+    transform: scale(1);
+    filter: none;
+  }
 }
 
 .glance-bounce {
@@ -554,9 +683,18 @@
 }
 
 @keyframes glance-save-bounce {
-  0%   { transform: scale(1); }
-  45%  { transform: scale(1.32); color: var(--g-coral); filter: drop-shadow(0 0 8px var(--g-coral-glow)); }
-  100% { transform: scale(1);   filter: none; }
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.32);
+    color: var(--g-coral);
+    filter: drop-shadow(0 0 8px var(--g-coral-glow));
+  }
+  100% {
+    transform: scale(1);
+    filter: none;
+  }
 }
 
 /* ── Drag Handle ── */
@@ -590,8 +728,9 @@
   background-repeat: no-repeat;
   background-size: 0% 1px;
   background-position: left bottom;
-  transition: background-size var(--dur-fast) var(--ease-smooth),
-              color var(--dur-fast) var(--ease-smooth);
+  transition:
+    background-size var(--dur-fast) var(--ease-smooth),
+    color var(--dur-fast) var(--ease-smooth);
 }
 
 .glance-snip-title:focus {
@@ -607,10 +746,11 @@
 .glance-snip-title:not(.glance-title-hidden) {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity var(--dur-fast) var(--ease-smooth),
-              transform var(--dur-fast) var(--ease-smooth),
-              background-size var(--dur-fast) var(--ease-smooth),
-              color var(--dur-fast) var(--ease-smooth);
+  transition:
+    opacity var(--dur-fast) var(--ease-smooth),
+    transform var(--dur-fast) var(--ease-smooth),
+    background-size var(--dur-fast) var(--ease-smooth),
+    color var(--dur-fast) var(--ease-smooth);
 }
 
 /* ── Opacity Slider ── */
@@ -655,14 +795,20 @@
 }
 
 .glance-annotation-header {
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
   padding: 0 8px;
-  background: linear-gradient(90deg, rgba(255,107,107,0.12) 0%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 107, 107, 0.12) 0%,
+    transparent 100%
+  );
   border-bottom: 1px solid var(--g-rim);
   border-radius: var(--r-xl) var(--r-xl) 0 0;
 }
@@ -679,7 +825,7 @@
 }
 
 .glance-annotation-label::before {
-  content: '';
+  content: "";
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -748,7 +894,8 @@
 }
 
 .glance-annotation-options {
-  left: 0; right: 0;
+  left: 0;
+  right: 0;
   bottom: 0;
   height: 40px;
   background: var(--g-raised);
@@ -803,14 +950,17 @@
   height: 18px;
   border-radius: 50%;
   border: 1px solid transparent;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.16);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
   cursor: pointer;
-  transition: box-shadow var(--dur-fast) var(--ease-smooth),
-              transform var(--dur-fast) var(--ease-smooth);
+  transition:
+    box-shadow var(--dur-fast) var(--ease-smooth),
+    transform var(--dur-fast) var(--ease-smooth);
 }
 
 .glance-color-swatch.selected {
-  box-shadow: 0 0 0 2px #fff, 0 0 8px var(--g-coral-glow);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 8px var(--g-coral-glow);
   transform: scale(1.15);
 }
 
@@ -831,7 +981,8 @@
 
 .glance-widget-canvas {
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   pointer-events: none;
   z-index: 2;
 }
@@ -844,11 +995,12 @@
 .glance-color-picker {
   display: none;
   position: absolute;
-  top: 30px; left: 5px;
+  top: 30px;
+  left: 5px;
   background: #fff;
   border-radius: 4px;
   padding: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .glance-widget.drawing-mode .glance-color-picker {
@@ -857,7 +1009,8 @@
 }
 
 .glance-color-btn {
-  width: 16px; height: 16px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: 1px solid #ccc;
   cursor: pointer;
@@ -876,7 +1029,7 @@
   position: fixed;
   inset: 0;
   z-index: 2147483647;
-  background: rgba(5,5,6,0.94);
+  background: rgba(5, 5, 6, 0.94);
   backdrop-filter: blur(12px) saturate(120%);
   display: flex;
   align-items: center;
@@ -898,13 +1051,15 @@
   max-height: 84vh;
   object-fit: contain;
   border-radius: var(--r-lg);
-  box-shadow: 0 40px 100px rgba(0,0,0,0.8),
-              0 0 0 1px var(--g-rim),
-              inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow:
+    0 40px 100px rgba(0, 0, 0, 0.8),
+    0 0 0 1px var(--g-rim),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transform: scale(0.94);
   opacity: 0;
-  transition: transform var(--dur-normal) var(--ease-out-expo),
-              opacity var(--dur-normal) var(--ease-smooth);
+  transition:
+    transform var(--dur-normal) var(--ease-out-expo),
+    opacity var(--dur-normal) var(--ease-smooth);
 }
 
 .glance-lightbox.show .glance-lightbox-image {
@@ -914,8 +1069,10 @@
 
 .glance-lightbox-close {
   position: absolute;
-  top: 22px; right: 22px;
-  width: 44px; height: 44px;
+  top: 22px;
+  right: 22px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--g-rim);
   background: var(--g-overlay);
@@ -925,9 +1082,10 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: border-color var(--dur-fast) var(--ease-smooth),
-              color var(--dur-fast) var(--ease-smooth),
-              box-shadow var(--dur-fast) var(--ease-smooth);
+  transition:
+    border-color var(--dur-fast) var(--ease-smooth),
+    color var(--dur-fast) var(--ease-smooth),
+    box-shadow var(--dur-fast) var(--ease-smooth);
 }
 
 .glance-lightbox-close:hover {
@@ -948,14 +1106,22 @@
   border: 1px solid var(--g-rim);
   background: var(--g-overlay);
   backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-toast),
-              inset 0 1px 0 rgba(255,255,255,0.06);
-  animation: lightboxActionsIn var(--dur-normal) var(--ease-out-expo) var(--dur-fast) both;
+  box-shadow:
+    var(--shadow-toast),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: lightboxActionsIn var(--dur-normal) var(--ease-out-expo)
+    var(--dur-fast) both;
 }
 
 @keyframes lightboxActionsIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .glance-lightbox-actions .glance-btn {
@@ -978,8 +1144,9 @@
   margin-top: 38px;
   max-height: 2000px;
   overflow: hidden;
-  transition: max-height var(--dur-normal) var(--ease-out-expo),
-              opacity var(--dur-normal) var(--ease-smooth);
+  transition:
+    max-height var(--dur-normal) var(--ease-out-expo),
+    opacity var(--dur-normal) var(--ease-smooth);
 }
 
 .glance-widget.glance-collapsed .glance-widget-body {
@@ -1009,24 +1176,35 @@
   box-shadow: var(--shadow-float);
   cursor: pointer;
   z-index: 2147483647;
-  transition: border-color var(--dur-fast) var(--ease-spring),
-              box-shadow var(--dur-fast) var(--ease-spring),
-              transform var(--dur-fast) var(--ease-spring);
+  transition:
+    border-color var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-fast) var(--ease-spring),
+    transform var(--dur-fast) var(--ease-spring);
   overflow: visible;
   animation: thumbAppear var(--dur-normal) var(--ease-spring) both;
 }
 
 @keyframes thumbAppear {
-  from { opacity: 0; transform: scale(0.7); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .glance-widget-thumbnail::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: calc(var(--r-lg) - 1.5px);
-  background: linear-gradient(135deg, rgba(8,8,9,0.3) 0%, rgba(8,8,9,0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(8, 8, 9, 0.3) 0%,
+    rgba(8, 8, 9, 0.1) 100%
+  );
   pointer-events: none;
 }
 
@@ -1050,8 +1228,13 @@
 }
 
 @keyframes glanceDotPulse {
-  0%, 100% { box-shadow: 0 0 4px var(--g-coral-glow); }
-  50%       { box-shadow: 0 0 14px var(--g-coral-glow); }
+  0%,
+  100% {
+    box-shadow: 0 0 4px var(--g-coral-glow);
+  }
+  50% {
+    box-shadow: 0 0 14px var(--g-coral-glow);
+  }
 }
 
 .glance-thumb-tooltip {
@@ -1070,8 +1253,9 @@
   font: 11px var(--font-text);
   box-shadow: var(--shadow-toast);
   backdrop-filter: blur(20px);
-  transition: opacity var(--dur-fast) var(--ease-smooth),
-              transform var(--dur-fast) var(--ease-smooth);
+  transition:
+    opacity var(--dur-fast) var(--ease-smooth),
+    transform var(--dur-fast) var(--ease-smooth);
 }
 
 .glance-widget-thumbnail:hover .glance-thumb-tooltip {
@@ -1084,7 +1268,9 @@
    ═══════════════════════════════════════════════════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation: none !important;
     transition-property: opacity !important;
     transition-duration: 120ms !important;
