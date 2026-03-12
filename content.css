@@ -1,33 +1,34 @@
 @import url('./design-system.css');
 
+/* ── Reset ── */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 :where(button, input, textarea, select, a, [contenteditable="true"]):focus-visible {
-  outline: 2px solid var(--glance-accent);
-  outline-offset: 2px;
+  outline: 2px solid var(--g-coral);
+  outline-offset: 3px;
 }
 
-/* Overlay during selection */
+/* ═══════════════════════════════════════════════════════════════
+   OVERLAY — preserved structure, styled in later commit
+   ═══════════════════════════════════════════════════════════════ */
+
 #glance-snipping-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.45);
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
   z-index: 2147483640;
-  cursor: crosshair;
   user-select: none;
   opacity: 0;
-  animation: glance-overlay-in 150ms ease-out forwards;
+  animation: glance-overlay-in var(--dur-fast) var(--ease-smooth) forwards;
+  cursor: crosshair;
 }
 
 #glance-selection-box {
   position: absolute;
-  border: 2px solid var(--glance-accent);
-  background: rgba(91, 110, 245, 0.08);
+  border: 2px solid var(--g-coral);
+  background: var(--g-coral-subtle);
   display: none;
   pointer-events: none;
   box-sizing: border-box;
@@ -35,7 +36,7 @@
 
 .glance-overlay-mask {
   position: absolute;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0,0,0,0.55);
   pointer-events: none;
 }
 
@@ -44,25 +45,33 @@
   top: 18px;
   left: 50%;
   transform: translateX(-50%);
-  color: var(--glance-text-secondary);
-  font-family: var(--font-ui);
+  color: var(--g-text-mid);
+  font-family: var(--font-text);
   font-size: 13px;
   z-index: 2147483642;
+  padding: 8px 16px;
+  background: var(--g-overlay);
+  border: 1px solid var(--g-rim);
+  border-radius: var(--r-pill);
 }
 
 #glance-instruction-label span {
   margin-left: 8px;
   opacity: 0.8;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--g-text-dim);
 }
 
 #glance-dimension-pill {
   position: absolute;
   display: none;
-  padding: 4px 10px;
-  border-radius: 20px;
-  background: var(--glance-bg);
-  color: var(--glance-text-primary);
-  border: 1px solid var(--glance-border);
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  background: var(--g-overlay);
+  color: var(--g-text-mid);
+  border: 1px solid var(--g-rim);
+  box-shadow: var(--shadow-toast);
   font-family: var(--font-mono);
   font-size: 11px;
   pointer-events: none;
@@ -71,52 +80,42 @@
 
 .glance-corner {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  border-color: var(--glance-accent);
+  width: 14px;
+  height: 14px;
+  border-color: var(--g-coral);
   border-style: solid;
   border-width: 0;
+  border-radius: 2px;
 }
 
 .glance-corner-tl {
-  top: -2px;
-  left: -2px;
-  border-top-width: 3px;
-  border-left-width: 3px;
+  top: -2px; left: -2px;
+  border-top-width: 3px; border-left-width: 3px;
 }
 
 .glance-corner-tr {
-  top: -2px;
-  right: -2px;
-  border-top-width: 3px;
-  border-right-width: 3px;
+  top: -2px; right: -2px;
+  border-top-width: 3px; border-right-width: 3px;
 }
 
 .glance-corner-bl {
-  bottom: -2px;
-  left: -2px;
-  border-bottom-width: 3px;
-  border-left-width: 3px;
+  bottom: -2px; left: -2px;
+  border-bottom-width: 3px; border-left-width: 3px;
 }
 
 .glance-corner-br {
-  bottom: -2px;
-  right: -2px;
-  border-bottom-width: 3px;
-  border-right-width: 3px;
+  bottom: -2px; right: -2px;
+  border-bottom-width: 3px; border-right-width: 3px;
 }
 
 @keyframes glance-overlay-in {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 #glance-flash {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   background: white;
   z-index: 2147483647;
   opacity: 0.8;
@@ -125,12 +124,14 @@
 }
 
 @keyframes glance-flash-anim {
-  0% { opacity: 0.8; }
+  0%   { opacity: 0.8; }
   100% { opacity: 0; }
 }
 
-/* Floating widget */
-/* Toast Notification */
+/* ═══════════════════════════════════════════════════════════════
+   TOAST NOTIFICATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
 #glance-toast-stack {
   position: fixed;
   left: 50%;
@@ -138,89 +139,133 @@
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   z-index: 2147483647;
+  align-items: center;
 }
 
 .glance-toast {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 100px;
-  background: var(--glance-surface);
-  border: 1px solid var(--glance-border);
-  color: var(--glance-text-primary);
-  box-shadow: var(--shadow-toolbar);
+  gap: 10px;
+  padding: 10px 18px 10px 14px;
+  border-radius: var(--r-pill);
+  background: var(--g-overlay);
+  border: 1px solid var(--g-rim);
+  box-shadow: var(--shadow-toast);
+  color: var(--g-text-bright);
+  font: 450 13px var(--font-text);
   opacity: 0;
-  transform: translateY(12px);
-  transition: transform var(--transition-smooth), opacity var(--transition-smooth);
-  font: 400 13px var(--font-ui);
+  transform: translateY(16px);
+  transition: transform var(--dur-normal) var(--ease-spring),
+              opacity var(--dur-normal) var(--ease-smooth);
+  pointer-events: none;
+  position: relative;
+}
+
+.glance-toast::before {
+  content: '';
+  width: 3px;
+  align-self: stretch;
+  border-radius: var(--r-pill);
+  flex-shrink: 0;
 }
 
 .glance-toast.show {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
 }
 
 .glance-toast.hide {
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(8px);
+  transition: transform var(--dur-fast) ease-in,
+              opacity var(--dur-fast) ease-in;
 }
 
 .glance-toast-icon {
   display: inline-flex;
+  flex-shrink: 0;
 }
 
-.glance-toast-success .glance-toast-icon { color: var(--glance-success); }
-.glance-toast-warning .glance-toast-icon { color: var(--glance-warning); }
-.glance-toast-error .glance-toast-icon { color: var(--glance-danger); }
-.glance-toast-info .glance-toast-icon { color: var(--glance-accent); }
+.glance-toast-success::before { background: var(--g-success); }
+.glance-toast-warning::before { background: var(--g-warning); }
+.glance-toast-error::before   { background: var(--g-danger); }
+.glance-toast-info::before    { background: var(--g-coral); }
+
+.glance-toast-success .glance-toast-icon { color: var(--g-success); }
+.glance-toast-warning .glance-toast-icon { color: var(--g-warning); }
+.glance-toast-error   .glance-toast-icon { color: var(--g-danger); }
+.glance-toast-info    .glance-toast-icon { color: var(--g-coral); }
+
+/* ═══════════════════════════════════════════════════════════════
+   FLOATING WIDGET — Shell
+   ═══════════════════════════════════════════════════════════════ */
 
 .glance-widget {
   position: fixed;
-  z-index: 2147483647; /* Maximum z-index */
-  background: var(--glance-bg);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--glance-border);
-  box-shadow: var(--shadow-widget);
+  z-index: 2147483647;
+  background: var(--g-grad-surface);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--g-rim);
+  box-shadow: var(--shadow-float), var(--shadow-glow),
+              inset 0 1px 0 rgba(255,255,255,0.09);
+  backdrop-filter: blur(40px) saturate(160%);
   overflow: visible;
   box-sizing: border-box;
-  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth), transform var(--transition-fast);
+  transition: border-color var(--dur-fast) var(--ease-smooth),
+              box-shadow var(--dur-normal) var(--ease-smooth),
+              transform var(--dur-fast) var(--ease-smooth);
 }
+
+/* ── Entrance / Exit ── */
 .glance-widget.glance-widget-entering {
   opacity: 0;
-  transform: scale(0.6) translateY(20px);
+  transform: scale(0.7) translateY(16px);
 }
+
 .glance-widget.glance-widget-ready {
   opacity: 1;
   transform: scale(1) translateY(0);
-  transition: transform var(--transition-spring), opacity var(--transition-spring), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
-}
-.glance-widget.glance-widget-exit {
-  opacity: 0;
-  transform: scale(0.85) translateY(8px);
-  transition: opacity 150ms ease-in, transform 150ms ease-in;
+  transition: transform var(--dur-spring) var(--ease-spring),
+              opacity var(--dur-spring) var(--ease-spring),
+              box-shadow var(--dur-normal) var(--ease-smooth),
+              border-color var(--dur-fast) var(--ease-smooth);
+  animation: glancePulse var(--dur-slow) var(--ease-smooth) forwards;
 }
 
+.glance-widget.glance-widget-exit {
+  opacity: 0;
+  transform: scale(0.88) translateY(8px);
+  transition: opacity var(--dur-fast) ease-in,
+              transform var(--dur-fast) ease-in;
+}
+
+/* ── Hover / Drag ── */
 .glance-widget:hover {
-  border-color: var(--glance-border-hover);
-  box-shadow: var(--shadow-widget), var(--shadow-accent);
+  border-color: var(--g-rim-soft);
 }
 
 .glance-widget.glance-dragging {
-  box-shadow: var(--shadow-widget), var(--shadow-accent);
+  border-color: var(--g-coral);
+  transform: scale(1.01);
+  box-shadow: var(--shadow-float), 0 0 32px rgba(255,107,107,0.28),
+              inset 0 1px 0 rgba(255,255,255,0.09);
 }
 
+/* ── Glow Pulse (runs once on entrance) ── */
+@keyframes glancePulse {
+  0%   { box-shadow: var(--shadow-float), 0 0 0px rgba(255,107,107,0),    inset 0 1px 0 rgba(255,255,255,0.09); }
+  40%  { box-shadow: var(--shadow-float), 0 0 40px rgba(255,107,107,0.3), inset 0 1px 0 rgba(255,255,255,0.09); }
+  100% { box-shadow: var(--shadow-float), var(--shadow-glow),             inset 0 1px 0 rgba(255,255,255,0.09); }
+}
+
+/* ── Resize Handles ── */
 .glance-resize-handle {
   position: absolute;
-  width: 10px;
-  height: 10px;
-  background: var(--glance-accent);
-  border-radius: 3px;
-  box-shadow: 0 0 6px var(--glance-accent-glow);
   opacity: 0;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--dur-fast) var(--ease-smooth);
   z-index: 3;
 }
 
@@ -228,158 +273,260 @@
   opacity: 1;
 }
 
-.glance-resize-nw, .glance-resize-ne, .glance-resize-se, .glance-resize-sw {
-  width: 12px;
-  height: 12px;
+/* Corner handles — coral gradient filled */
+.glance-resize-nw,
+.glance-resize-ne,
+.glance-resize-se,
+.glance-resize-sw {
+  width: 10px;
+  height: 10px;
+  background: var(--g-grad-coral);
+  border-radius: 3px;
+  box-shadow: 0 0 8px var(--g-coral-glow);
 }
 
-.glance-resize-nw { top: -5px; left: -5px; cursor: nwse-resize; }
-.glance-resize-n  { top: -5px; left: calc(50% - 5px); cursor: ns-resize; }
-.glance-resize-ne { top: -5px; right: -5px; cursor: nesw-resize; }
-.glance-resize-e  { top: calc(50% - 5px); right: -5px; cursor: ew-resize; }
+/* Edge handles — slim rectangles */
+.glance-resize-n,
+.glance-resize-s {
+  width: 24px;
+  height: 6px;
+  background: var(--g-coral);
+  border-radius: var(--r-pill);
+}
+
+.glance-resize-e,
+.glance-resize-w {
+  width: 6px;
+  height: 24px;
+  background: var(--g-coral);
+  border-radius: var(--r-pill);
+}
+
+.glance-widget:hover .glance-resize-n,
+.glance-widget:hover .glance-resize-s,
+.glance-widget:hover .glance-resize-e,
+.glance-widget:hover .glance-resize-w {
+  opacity: 0.6;
+}
+
+.glance-resize-nw { top: -5px;  left: -5px;  cursor: nwse-resize; }
+.glance-resize-n  { top: -3px;  left: calc(50% - 12px); cursor: ns-resize; }
+.glance-resize-ne { top: -5px;  right: -5px; cursor: nesw-resize; }
+.glance-resize-e  { top: calc(50% - 12px); right: -3px; cursor: ew-resize; }
 .glance-resize-se { bottom: -5px; right: -5px; cursor: nwse-resize; }
-.glance-resize-s  { bottom: -5px; left: calc(50% - 5px); cursor: ns-resize; }
+.glance-resize-s  { bottom: -3px; left: calc(50% - 12px); cursor: ns-resize; }
 .glance-resize-sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
-.glance-resize-w  { top: calc(50% - 5px); left: -5px; cursor: ew-resize; }
+.glance-resize-w  { top: calc(50% - 12px); left: -3px; cursor: ew-resize; }
 
-@keyframes glance-widget-enter {
-  0% {
-    transform: translateY(20px) scale(0.95);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
+/* ── Toolbar ── */
 .glance-widget-toolbar {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 36px;
+  top: 0; left: 0; right: 0;
+  height: 38px;
   display: flex;
   justify-content: space-between;
-  padding: 4px 8px;
-  background: var(--glance-glass);
-  border-bottom: 1px solid var(--glance-glass-border);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  backdrop-filter: blur(20px) saturate(180%);
-  z-index: 2;
   align-items: center;
+  padding: 0 6px 0 8px;
+  background: var(--g-grad-toolbar);
+  border-bottom: 1px solid var(--g-rim);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  z-index: 2;
 }
 
 .glance-toolbar-left,
 .glance-toolbar-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
+/* ── Action Bar ── */
 .glance-widget-actionbar {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 36px;
-  height: 32px;
+  left: 0; right: 0;
+  top: 38px;
+  height: 34px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
   padding: 0 8px;
-  background: rgba(26, 26, 31, 0.8);
-  border-bottom: 1px solid var(--glance-glass-border);
+  background: var(--g-raised);
+  border-bottom: 1px solid var(--g-rim);
   opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+  transform: translateY(-10px);
+  transition: opacity var(--dur-fast) var(--ease-smooth),
+              transform var(--dur-normal) var(--ease-spring);
   z-index: 2;
+  pointer-events: none;
 }
 
 .glance-widget:hover .glance-widget-actionbar {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
 }
 
+/* Hide toolbar/actionbar in annotation mode */
 .glance-widget.annotation-mode .glance-widget-toolbar,
 .glance-widget.annotation-mode .glance-widget-actionbar {
   opacity: 0;
   pointer-events: none;
 }
 
-.glance-snip-title {
-  font-family: var(--font-ui);
-  color: var(--glance-text-primary);
-  font-size: 12px;
-  font-weight: 500;
-  min-width: 70px;
-  max-width: 180px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Action bar separator */
+.glance-action-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--g-rim);
+  margin: 0 4px;
+  flex-shrink: 0;
 }
 
-.glance-snip-title:focus {
-  outline: none;
-  color: var(--glance-accent-hover);
-}
-
-.glance-opacity-slider {
-  width: 68px;
-  margin-right: 4px;
-  cursor: pointer;
-}
-
+/* ── Buttons ── */
 .glance-btn {
   background: transparent;
-  color: var(--glance-text-secondary);
+  color: var(--g-text-dim);
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  width: 28px;
-  height: 28px;
+  border-radius: var(--r-sm);
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast), color var(--transition-fast);
+  transition: background var(--dur-fast) var(--ease-smooth),
+              color var(--dur-fast) var(--ease-smooth),
+              transform var(--dur-fast) var(--ease-smooth);
+  flex-shrink: 0;
 }
 
 .glance-btn:hover {
-  background: rgba(255,255,255,0.08);
-  color: var(--glance-text-primary);
+  background: rgba(255,255,255,0.07);
+  color: var(--g-text-bright);
 }
 
 .glance-btn:active {
-  background: rgba(255,255,255,0.14);
-  transform: scale(0.94);
+  transform: scale(0.92);
 }
 
 .glance-close-btn:hover {
-  color: var(--glance-danger);
+  background: rgba(255,95,112,0.15);
+  color: var(--g-danger);
 }
 
+/* Close icon subtle rotate on hover */
+.glance-close-btn .glance-icon {
+  transition: transform var(--dur-fast) var(--ease-smooth);
+}
+
+.glance-close-btn:hover .glance-icon {
+  transform: rotate(12deg);
+}
+
+/* Action bar buttons */
+.glance-widget-actionbar .glance-btn {
+  width: 28px;
+  height: 28px;
+  color: var(--g-text-dim);
+}
+
+.glance-widget-actionbar .glance-btn:hover {
+  background: var(--g-coral-subtle);
+  color: var(--g-coral);
+}
+
+.glance-widget-actionbar .glance-icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* Success / bounce state */
+.glance-success-state {
+  color: var(--g-success) !important;
+}
+
+.glance-bounce {
+  animation: glance-save-bounce 300ms var(--ease-spring);
+}
+
+@keyframes glance-save-bounce {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); color: var(--g-coral); }
+  100% { transform: scale(1); }
+}
+
+/* ── Drag Handle ── */
 .glance-drag-handle {
   cursor: grab;
+  color: var(--g-text-dim);
+}
+
+.glance-drag-handle:hover {
+  color: var(--g-text-mid);
 }
 
 .glance-widget.glance-dragging .glance-drag-handle {
   cursor: grabbing;
 }
 
+/* ── Snip Title ── */
+.glance-snip-title {
+  font-family: var(--font-text);
+  color: var(--g-text-mid);
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 60px;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  outline: none;
+  /* Sliding coral underline via background trick */
+  background-image: linear-gradient(var(--g-coral), var(--g-coral));
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  background-position: left bottom;
+  transition: background-size var(--dur-fast) var(--ease-smooth),
+              color var(--dur-fast) var(--ease-smooth);
+}
+
+.glance-snip-title:focus {
+  color: var(--g-text-bright);
+  background-size: 100% 1px;
+}
+
+.glance-title-hidden {
+  opacity: 0;
+  transform: translateY(3px);
+}
+
+.glance-snip-title:not(.glance-title-hidden) {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--dur-fast) var(--ease-smooth),
+              transform var(--dur-fast) var(--ease-smooth),
+              background-size var(--dur-fast) var(--ease-smooth),
+              color var(--dur-fast) var(--ease-smooth);
+}
+
+/* ── Opacity Slider ── */
+.glance-opacity-slider {
+  width: 68px;
+  margin-right: 4px;
+  cursor: pointer;
+  accent-color: var(--g-coral);
+}
+
+/* ── Icon Sizing ── */
 .glance-icon {
   width: 16px;
   height: 16px;
   pointer-events: none;
 }
 
-.glance-widget-actionbar .glance-btn {
-  width: 24px;
-  height: 24px;
-}
-
-.glance-widget-actionbar .glance-icon {
-  width: 14px;
-  height: 14px;
-}
+/* ═══════════════════════════════════════════════════════════════
+   ANNOTATION MODE
+   ═══════════════════════════════════════════════════════════════ */
 
 .glance-annotation-header,
 .glance-annotation-sidebar,
@@ -387,7 +534,7 @@
   position: absolute;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--dur-fast) var(--ease-smooth);
   z-index: 3;
 }
 
@@ -398,30 +545,64 @@
   pointer-events: auto;
 }
 
+/* Coral top border in annotation mode */
+.glance-widget.annotation-mode {
+  border-top-color: var(--g-coral);
+}
+
 .glance-annotation-header {
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
-  padding: 4px 8px;
-  background: var(--glance-glass);
-  border-bottom: 1px solid var(--glance-glass-border);
+  padding: 0 8px;
+  background: linear-gradient(90deg, rgba(255,107,107,0.12) 0%, transparent 100%);
+  border-bottom: 1px solid var(--g-rim);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
 }
 
 .glance-annotation-label {
   margin-right: auto;
-  color: var(--glance-accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--g-text-coral);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
+  font-family: var(--font-text);
+}
+
+.glance-annotation-label::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--g-coral);
+  flex-shrink: 0;
+  animation: glanceDotPulse 2.5s ease-in-out infinite;
 }
 
 .glance-done-btn {
-  background: var(--glance-accent);
-  color: var(--glance-text-primary);
+  background: var(--g-grad-coral) !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border-radius: var(--r-sm) !important;
+  box-shadow: 0 2px 12px var(--g-coral-glow) !important;
+  width: auto !important;
+  padding: 0 12px !important;
+  height: 24px !important;
+}
+
+.glance-done-btn:hover {
+  filter: brightness(1.12);
+  transform: scale(1.03) !important;
+}
+
+.glance-done-btn:active {
+  transform: scale(0.96) !important;
 }
 
 .glance-annotation-sidebar {
@@ -429,8 +610,8 @@
   top: 68px;
   bottom: 40px;
   width: 40px;
-  background: var(--glance-surface);
-  border-right: 1px solid var(--glance-border);
+  background: var(--g-raised);
+  border-right: 1px solid var(--g-rim);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -439,17 +620,16 @@
 }
 
 .glance-annotation-sidebar .glance-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
 }
 
 .glance-annotation-options {
-  left: 0;
-  right: 0;
+  left: 0; right: 0;
   bottom: 0;
   height: 40px;
-  background: var(--glance-surface);
-  border-top: 1px solid var(--glance-border);
+  background: var(--g-raised);
+  border-top: 1px solid var(--g-rim);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -458,6 +638,7 @@
 
 .glance-stroke-slider {
   width: 90px;
+  accent-color: var(--g-coral);
 }
 
 .glance-color-swatches {
@@ -467,31 +648,29 @@
 }
 
 .glance-color-swatch {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   border: 1px solid transparent;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.16);
   cursor: pointer;
+  transition: box-shadow var(--dur-fast) var(--ease-smooth),
+              transform var(--dur-fast) var(--ease-smooth);
 }
 
 .glance-color-swatch.selected {
-  box-shadow: 0 0 0 2px #fff;
+  box-shadow: 0 0 0 2px #fff, 0 0 8px var(--g-coral-glow);
+  transform: scale(1.15);
 }
 
+/* Success bounce for save button */
 .glance-success-state {
-  color: var(--glance-success);
+  color: var(--g-success) !important;
 }
 
-.glance-bounce {
-  animation: glance-save-bounce 260ms ease-out;
-}
-
-@keyframes glance-save-bounce {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
+/* ═══════════════════════════════════════════════════════════════
+   IMAGE + CANVAS
+   ═══════════════════════════════════════════════════════════════ */
 
 .glance-widget-img {
   width: 100%;
@@ -499,59 +678,65 @@
   display: block;
   user-select: none;
   pointer-events: none;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  background: var(--glance-bg);
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+  background: var(--g-void);
   object-fit: contain;
 }
 
 .glance-widget-canvas {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   pointer-events: none;
   z-index: 2;
 }
+
 .glance-widget.drawing-mode .glance-widget-canvas {
   pointer-events: auto;
   cursor: crosshair;
 }
+
 .glance-color-picker {
   display: none;
   position: absolute;
-  top: 30px;
-  left: 5px;
+  top: 30px; left: 5px;
   background: #fff;
   border-radius: 4px;
   padding: 4px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+
 .glance-widget.drawing-mode .glance-color-picker {
   display: flex;
   gap: 4px;
 }
+
 .glance-color-btn {
-  width: 16px;
-  height: 16px;
+  width: 16px; height: 16px;
   border-radius: 50%;
   border: 1px solid #ccc;
   cursor: pointer;
 }
+
 .glance-widget.text-mode .glance-widget-canvas {
   pointer-events: auto;
   cursor: text;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   LIGHTBOX
+   ═══════════════════════════════════════════════════════════════ */
+
 .glance-lightbox {
   position: fixed;
   inset: 0;
   z-index: 2147483647;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(8px);
+  background: rgba(5,5,6,0.94);
+  backdrop-filter: blur(12px) saturate(120%);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 150ms ease-out;
+  transition: opacity var(--dur-normal) var(--ease-smooth);
 }
 
 .glance-lightbox.show {
@@ -563,14 +748,17 @@
 }
 
 .glance-lightbox-image {
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: 88vw;
+  max-height: 84vh;
   object-fit: contain;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-  transform: scale(0.92);
+  border-radius: var(--r-lg);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.8),
+              0 0 0 1px var(--g-rim),
+              inset 0 1px 0 rgba(255,255,255,0.06);
+  transform: scale(0.94);
   opacity: 0;
-  transition: transform 200ms ease-out, opacity 200ms ease-out;
+  transition: transform var(--dur-normal) var(--ease-out-expo),
+              opacity var(--dur-normal) var(--ease-smooth);
 }
 
 .glance-lightbox.show .glance-lightbox-image {
@@ -580,18 +768,25 @@
 
 .glance-lightbox-close {
   position: absolute;
-  top: 22px;
-  right: 22px;
-  width: 40px;
-  height: 40px;
+  top: 22px; right: 22px;
+  width: 44px; height: 44px;
   border-radius: 50%;
-  border: 1px solid var(--glance-border);
-  background: var(--glance-surface);
-  color: var(--glance-text-primary);
+  border: 1px solid var(--g-rim);
+  background: var(--g-overlay);
+  color: var(--g-text-mid);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-smooth),
+              color var(--dur-fast) var(--ease-smooth),
+              box-shadow var(--dur-fast) var(--ease-smooth);
+}
+
+.glance-lightbox-close:hover {
+  border-color: var(--g-coral);
+  color: var(--g-coral);
+  box-shadow: 0 0 12px var(--g-coral-glow);
 }
 
 .glance-lightbox-actions {
@@ -600,28 +795,39 @@
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--glance-border);
-  background: var(--glance-surface);
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--g-rim);
+  background: var(--g-overlay);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-toast);
 }
-.glance-title-hidden {
-  opacity: 0;
-  transform: translateY(3px);
+
+.glance-lightbox-actions .glance-btn {
+  color: var(--g-text-mid);
+  width: 34px;
+  height: 34px;
 }
-.glance-snip-title:not(.glance-title-hidden) {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
+
+.glance-lightbox-actions .glance-btn:hover {
+  background: var(--g-coral-subtle);
+  color: var(--g-coral);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   WIDGET BODY + COLLAPSE
+   ═══════════════════════════════════════════════════════════════ */
+
 .glance-widget-body {
   position: relative;
-  margin-top: 36px;
-  max-height: 1000px;
+  margin-top: 38px;
+  max-height: 2000px;
   overflow: hidden;
-  transition: max-height 200ms ease-out, opacity 200ms ease-out;
+  transition: max-height var(--dur-normal) var(--ease-out-expo),
+              opacity var(--dur-normal) var(--ease-smooth);
 }
+
 .glance-widget.glance-collapsed .glance-widget-body {
   max-height: 0;
   opacity: 0;
@@ -633,57 +839,87 @@
   transform: scale(0.92);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   MINIMIZED THUMBNAIL
+   ═══════════════════════════════════════════════════════════════ */
+
 .glance-widget-thumbnail {
   position: fixed;
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  border: 1.5px solid var(--glance-border);
-  background-color: var(--glance-surface);
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-lg);
+  border: 1.5px solid var(--g-rim);
+  background-color: var(--g-raised);
   background-size: cover;
   background-position: center;
-  box-shadow: var(--shadow-widget);
+  box-shadow: var(--shadow-float);
   cursor: pointer;
   z-index: 2147483647;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  transition: border-color var(--dur-fast) var(--ease-spring),
+              box-shadow var(--dur-fast) var(--ease-spring),
+              transform var(--dur-fast) var(--ease-spring);
+  overflow: visible;
+}
+
+.glance-widget-thumbnail::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--r-lg) - 1.5px);
+  background: linear-gradient(135deg, rgba(8,8,9,0.3) 0%, rgba(8,8,9,0.1) 100%);
+  pointer-events: none;
 }
 
 .glance-widget-thumbnail:hover {
-  border-color: var(--glance-accent);
-  box-shadow: var(--shadow-widget), var(--shadow-accent);
-  transform: translateY(-2px);
+  border-color: var(--g-coral);
+  box-shadow: var(--shadow-float), var(--shadow-glow);
+  transform: scale(1.08);
 }
 
 .glance-thumb-dot {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 8px;
-  height: 8px;
+  top: -3px;
+  right: -3px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: var(--glance-accent);
+  background: var(--g-grad-coral);
+  box-shadow: 0 0 8px var(--g-coral-glow);
+  z-index: 1;
+  animation: glanceDotPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes glanceDotPulse {
+  0%, 100% { box-shadow: 0 0 4px var(--g-coral-glow); }
+  50%       { box-shadow: 0 0 14px var(--g-coral-glow); }
 }
 
 .glance-thumb-tooltip {
   position: absolute;
   left: 50%;
-  top: calc(100% + 6px);
+  bottom: calc(100% + 8px);
   transform: translateX(-50%);
-  background: var(--glance-surface);
-  border: 1px solid var(--glance-border);
-  border-radius: 100px;
-  padding: 5px 10px;
-  color: var(--glance-text-primary);
+  background: var(--g-overlay);
+  border: 1px solid var(--g-rim);
+  border-radius: var(--r-pill);
+  padding: 5px 12px;
+  color: var(--g-text-bright);
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  font-size: 11px;
-  transition: opacity var(--transition-fast);
+  font: 11px var(--font-text);
+  box-shadow: var(--shadow-toast);
+  backdrop-filter: blur(20px);
+  transition: opacity var(--dur-fast) var(--ease-smooth);
 }
 
 .glance-widget-thumbnail:hover .glance-thumb-tooltip {
   opacity: 1;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   REDUCED MOTION FALLBACKS
+   ═══════════════════════════════════════════════════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -704,7 +940,8 @@
   .glance-widget-actionbar,
   .glance-widget-thumbnail,
   .glance-title-hidden,
-  .glance-snip-title:not(.glance-title-hidden) {
+  .glance-snip-title:not(.glance-title-hidden),
+  .glance-close-btn .glance-icon {
     transform: none !important;
   }
 
