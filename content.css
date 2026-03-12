@@ -371,7 +371,8 @@
 .glance-resize-handle {
   position: absolute;
   opacity: 0;
-  transition: opacity var(--dur-fast) var(--ease-smooth);
+  transition: opacity var(--dur-fast) var(--ease-smooth),
+              transform var(--dur-fast) var(--ease-smooth);
   z-index: 3;
 }
 
@@ -379,90 +380,31 @@
   opacity: 1;
 }
 
-/* Corner handles — white filled */
-.glance-resize-nw,
-.glance-resize-ne,
-.glance-resize-se,
-.glance-resize-sw {
-  width: 12px;
-  height: 12px;
+/* Common sizing for all markers */
+.glance-resize-nw, .glance-resize-ne, .glance-resize-se, .glance-resize-sw,
+.glance-resize-n, .glance-resize-s, .glance-resize-e, .glance-resize-w {
+  width: 10px;
+  height: 10px;
   background: var(--g-text);
-  border: 2px solid var(--g-base);
+  border: 1px solid var(--g-rim-bright);
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
-  opacity: 0.8;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
-/* Edge handles — slim rectangles */
-.glance-resize-n,
-.glance-resize-s {
-  width: 28px;
-  height: 8px;
-  background: var(--g-text);
-  border-radius: var(--r-pill);
-  opacity: 0.6;
+.glance-widget:hover .glance-resize-handle:hover {
+  transform: scale(1.4);
+  background: #fff;
 }
 
-.glance-resize-e,
-.glance-resize-w {
-  width: 8px;
-  height: 28px;
-  background: var(--g-text);
-  border-radius: var(--r-pill);
-  opacity: 0.6;
-}
+.glance-resize-nw { top: -5px; left: -5px; cursor: nwse-resize; }
+.glance-resize-ne { top: -5px; right: -5px; cursor: nesw-resize; }
+.glance-resize-se { bottom: -5px; right: -5px; cursor: nwse-resize; }
+.glance-resize-sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
 
-.glance-widget:hover .glance-resize-n,
-.glance-widget:hover .glance-resize-s,
-.glance-widget:hover .glance-resize-e,
-.glance-widget:hover .glance-resize-w {
-  opacity: 1;
-}
-
-.glance-widget:hover .glance-resize-handle {
-  transform: scale(1.1);
-}
-
-.glance-resize-nw {
-  top: -6px;
-  left: -6px;
-  cursor: nwse-resize;
-}
-.glance-resize-n {
-  top: -4px;
-  left: calc(50% - 14px);
-  cursor: ns-resize;
-}
-.glance-resize-ne {
-  top: -6px;
-  right: -6px;
-  cursor: nesw-resize;
-}
-.glance-resize-e {
-  top: calc(50% - 14px);
-  right: -4px;
-  cursor: ew-resize;
-}
-.glance-resize-se {
-  bottom: -6px;
-  right: -6px;
-  cursor: nwse-resize;
-}
-.glance-resize-s {
-  bottom: -4px;
-  left: calc(50% - 14px);
-  cursor: ns-resize;
-}
-.glance-resize-sw {
-  bottom: -6px;
-  left: -6px;
-  cursor: nesw-resize;
-}
-.glance-resize-w {
-  top: calc(50% - 14px);
-  left: -4px;
-  cursor: ew-resize;
-}
+.glance-resize-n { top: -5px; left: calc(50% - 5px); cursor: ns-resize; }
+.glance-resize-s { bottom: -5px; left: calc(50% - 5px); cursor: ns-resize; }
+.glance-resize-e { top: calc(50% - 5px); right: -5px; cursor: ew-resize; }
+.glance-resize-w { top: calc(50% - 5px); left: -5px; cursor: ew-resize; }
 
 /* ── Toolbar ── */
 .glance-widget-toolbar {
