@@ -148,8 +148,9 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 });
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.status === "loading" && tab.active) {
-    // Only restore on actual navigation/refresh, not state updates
+  // Only restore if the status is "complete" and the tab is active.
+  // This prevents multiple "loading" triggers and ensures the page is ready.
+  if (changeInfo.status === "complete" && tab.active) {
     injectAndRestore(tabId);
   }
 });
@@ -167,3 +168,4 @@ async function injectAndRestore(tabId) {
     DBG("injectAndRestore skipped/error:", e.message);
   }
 }
+
