@@ -7,54 +7,30 @@ if (!document.getElementById("glance-init-flag")) {
   DBG("Content script initialized on", window.location.href);
 
   function getActiveSnips(callback) {
-    chrome.storage.session.get({ activeSnips: [] }, (result) => {
-      if (
-        !chrome.runtime.lastError &&
-        result &&
-        Array.isArray(result.activeSnips)
-      ) {
-        callback(result.activeSnips);
+    // Content scripts can't access chrome.storage.session directly in all contexts
+    // Fallback immediately to background script to ensure reliable data retrieval
+    chrome.runtime.sendMessage({ action: "get_active_snips" }, (response) => {
+      if (chrome.runtime.lastError) {
+        DBG("BG get_active_snips failed:", chrome.runtime.lastError.message);
+        callback([]);
         return;
       }
-
-      const err =
-        chrome.runtime.lastError?.message || "session storage unavailable";
-      DBG("session.get failed, falling back to BG:", err);
-      chrome.runtime.sendMessage({ action: "get_active_snips" }, (response) => {
-        if (chrome.runtime.lastError) {
-          DBG("BG get_active_snips failed:", chrome.runtime.lastError.message);
-          callback([]);
-          return;
-        }
-        callback(
-          Array.isArray(response?.activeSnips) ? response.activeSnips : [],
-        );
-      });
+      callback(
+        Array.isArray(response?.activeSnips) ? response.activeSnips : [],
+      );
     });
   }
 
   function setActiveSnips(activeSnips, callback) {
-    chrome.storage.session.set({ activeSnips }, () => {
-      if (!chrome.runtime.lastError) {
+    chrome.runtime.sendMessage(
+      { action: "set_active_snips", activeSnips },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          DBG("BG set_active_snips failed:", chrome.runtime.lastError.message);
+        }
         if (callback) callback();
-        return;
-      }
-
-      const err = chrome.runtime.lastError.message;
-      DBG("session.set failed, falling back to BG:", err);
-      chrome.runtime.sendMessage(
-        { action: "set_active_snips", activeSnips },
-        () => {
-          if (chrome.runtime.lastError) {
-            DBG(
-              "BG set_active_snips failed:",
-              chrome.runtime.lastError.message,
-            );
-          }
-          if (callback) callback();
-        },
-      );
-    });
+      },
+    );
   }
 
   const isSnipping = () =>
@@ -136,9 +112,8 @@ if (!document.getElementById("glance-init-flag")) {
     } else if (request.action === "restore_snips") {
       getActiveSnips((activeSnips) => {
         activeSnips.forEach((snip) => {
-          if (
-            !document.querySelector(`.glance-widget[data-snip-id="${snip.id}"]`)
-          ) {
+          const existing = document.querySelector(`.glance-widget[data-snip-id="${snip.id}"]`);
+          if (!existing) {
             createWidget({
               image: snip.image,
               width: parseFloat(snip.width),
@@ -156,6 +131,10 @@ if (!document.getElementById("glance-init-flag")) {
       const img = new Image();
       img.onload = () => {
         getActiveSnips((activeSnips) => {
+          // Check if this image already exists in session to prevent duplicates
+          const isDuplicate = activeSnips.some(s => s.image === request.image);
+          if (isDuplicate) return;
+
           createWidget({
             image: request.image,
             width: img.width,
@@ -207,10 +186,11 @@ if (!document.getElementById("glance-init-flag")) {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
 
-      canvas.width = area.width;
-      canvas.height = area.height;
+      // Set canvas to native device resolution for 4K/HiDPI support
+      canvas.width = area.width * dpr;
+      canvas.height = area.height * dpr;
 
-      // Draw the cropped region to the canvas
+      // Draw the cropped region using full device resolution
       ctx.drawImage(
         img,
         area.left * dpr,
@@ -219,11 +199,12 @@ if (!document.getElementById("glance-init-flag")) {
         area.height * dpr,
         0,
         0,
-        area.width,
-        area.height,
+        area.width * dpr,
+        area.height * dpr,
       );
 
-      const croppedDataUrl = canvas.toDataURL("image/png");
+      // Export as high-quality PNG (lossless)
+      const croppedDataUrl = canvas.toDataURL("image/png", 1.0);
       getActiveSnips((activeSnips) => {
         createWidget({
           image: croppedDataUrl,
@@ -259,253 +240,23 @@ if (!document.getElementById("glance-init-flag")) {
     widget.style.top =
       top || Math.max(10, (window.innerHeight - height) / 2 + offset) + "px";
 
-    const toolbar = document.createElement("div");
-    toolbar.className = "glance-widget-toolbar";
-    const toolbarLeft = document.createElement("div");
-    toolbarLeft.className = "glance-toolbar-left";
-    const toolbarRight = document.createElement("div");
-    toolbarRight.className = "glance-toolbar-right";
+    const verticalMenu = document.createElement("div");
+    verticalMenu.className = "glance-vertical-tools"; 
+    verticalMenu.innerHTML = `
+      <button class="glance-v-btn v-copy" data-tool="copy" title="Copy">${icon("copy")}</button>
+      <button class="glance-v-btn v-save" data-tool="save" title="Save">${icon("save")}</button>
+      <button class="glance-v-btn v-download" data-tool="download" title="Download">${icon("download")}</button>
+    `;
 
-    const dragHandle = document.createElement("button");
-    dragHandle.className = "glance-btn glance-drag-handle";
-    dragHandle.innerHTML = icon("grip");
-    dragHandle.title = "Drag";
-
-    const titleEl = document.createElement("span");
-    titleEl.className = "glance-snip-title glance-title-hidden";
-    titleEl.contentEditable = "true";
-    titleEl.spellcheck = false;
-    titleEl.textContent = snipNumber ? `#${snipNumber} Snip` : "Snip";
-
-    let isDrawingMode = false;
-    let isPainting = false;
-    let lastX = 0,
-      lastY = 0;
-    let currentColor = "#ff0000";
-    let isTextMode = false;
-    const drawHistory = [];
-
-    const drawBtn = document.createElement("button");
-    drawBtn.className = "glance-btn glance-draw-btn";
-    drawBtn.innerHTML = icon("pen");
-    drawBtn.title = "Draw";
-
-    const colorPicker = document.createElement("input");
-    colorPicker.type = "color";
-    colorPicker.value = "#ff0000";
-    colorPicker.className = "glance-color-picker";
-    colorPicker.title = "Pen Color";
-    colorPicker.style.display = "none";
-
-    const annotationHeader = document.createElement("div");
-    annotationHeader.className = "glance-annotation-header";
-    annotationHeader.innerHTML = `<span class="glance-annotation-label">Annotation Mode</span>`;
-    const undoBtn = document.createElement("button");
-    undoBtn.className = "glance-btn glance-undo-btn";
-    undoBtn.innerHTML = icon("frame");
-    undoBtn.title = "Undo";
-    const doneBtn = document.createElement("button");
-    doneBtn.className = "glance-btn glance-done-btn";
-    doneBtn.innerHTML = icon("check");
-    doneBtn.title = "Done";
-    annotationHeader.appendChild(undoBtn);
-    annotationHeader.appendChild(doneBtn);
-
-    const annotationSidebar = document.createElement("div");
-    annotationSidebar.className = "glance-annotation-sidebar";
-
-    const markerBtn = document.createElement("button");
-    markerBtn.className = "glance-btn glance-marker-btn";
-    markerBtn.innerHTML = icon("pen");
-    markerBtn.title = "Mark";
-
-    const annotationOptions = document.createElement("div");
-    annotationOptions.className = "glance-annotation-options";
-    const strokeSlider = document.createElement("input");
-    strokeSlider.type = "range";
-    strokeSlider.min = "1";
-    strokeSlider.max = "12";
-    strokeSlider.value = "3";
-    strokeSlider.className = "glance-stroke-slider";
-    const swatches = document.createElement("div");
-    swatches.className = "glance-color-swatches";
-    ["#ff4d6d", "#FFB347", "#5B6EF5", "#3DDC84", "#ffffff", "#000000"].forEach(
-      (color) => {
-        const swatch = document.createElement("button");
-        swatch.className = "glance-color-swatch";
-        swatch.style.background = color;
-        swatch.addEventListener("click", (e) => {
-          e.stopPropagation();
-          currentColor = color;
-          colorPicker.value = color;
-          swatches
-            .querySelectorAll(".glance-color-swatch")
-            .forEach((n) => n.classList.remove("selected"));
-          swatch.classList.add("selected");
-        });
-        if (color === "#ff4d6d") swatch.classList.add("selected");
-        swatches.appendChild(swatch);
-      },
-    );
-    annotationOptions.appendChild(strokeSlider);
-    annotationOptions.appendChild(swatches);
-
-    const updateAnnotationChrome = () => {
-      const enabled = isDrawingMode || isTextMode;
-      widget.classList.toggle("annotation-mode", enabled);
-    };
-
-    drawBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      isDrawingMode = !isDrawingMode;
-      if (isDrawingMode) {
-        drawBtn.style.background = "rgba(0,0,0,0.2)";
-        widget.classList.add("drawing-mode");
-        colorPicker.style.display = "inline-block";
-        isTextMode = false;
-        textBtn.style.background = "none";
-        widget.classList.remove("text-mode");
-      } else {
-        drawBtn.style.background = "none";
-        widget.classList.remove("drawing-mode");
-        colorPicker.style.display = "none";
-        saveWidgetState(widget);
-      }
-      updateAnnotationChrome();
-    });
-
-    colorPicker.addEventListener("input", (e) => {
-      currentColor = e.target.value;
-    });
-
-    const textBtn = document.createElement("button");
-    textBtn.className = "glance-btn glance-text-btn";
-    textBtn.innerHTML = icon("text");
-    textBtn.title = "Add Text";
-    textBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      isTextMode = !isTextMode;
-      if (isTextMode) {
-        textBtn.style.background = "rgba(0,0,0,0.2)";
-        widget.classList.add("text-mode");
-        isDrawingMode = false;
-        drawBtn.style.background = "none";
-        widget.classList.remove("drawing-mode");
-        colorPicker.style.display = "none";
-      } else {
-        textBtn.style.background = "none";
-        widget.classList.remove("text-mode");
-      }
-      updateAnnotationChrome();
-    });
-
-    markerBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      isDrawingMode = true;
-      isTextMode = false;
-      currentColor = "#FFB347";
-      colorPicker.value = "#FFB347";
-      drawBtn.style.background = "rgba(0,0,0,0.2)";
-      textBtn.style.background = "none";
-      widget.classList.add("drawing-mode");
-      widget.classList.remove("text-mode");
-      updateAnnotationChrome();
-    });
-
-    const reframeBtn = document.createElement("button");
-    reframeBtn.className = "glance-btn glance-reframe-btn";
-    reframeBtn.innerHTML = icon("frame");
-    reframeBtn.title = "Reframe";
-    let isReframeMode = true;
-    reframeBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      isReframeMode = !isReframeMode;
-      if (isReframeMode) {
-        widget.classList.remove("no-reframe");
-        reframeBtn.style.opacity = "1";
-      } else {
-        widget.classList.add("no-reframe");
-        reframeBtn.style.opacity = "0.5";
-      }
-    });
-
-    const copyBtn = document.createElement("button");
-    copyBtn.className = "glance-btn glance-copy-btn";
-    copyBtn.innerHTML = icon("copy");
-    copyBtn.title = "Copy to Clipboard";
-    copyBtn.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      try {
-        const res = await fetch(image);
-        const blob = await res.blob();
-        await navigator.clipboard.write([
-          new ClipboardItem({ [blob.type]: blob }),
-        ]);
-        copyBtn.innerHTML = icon("check");
-        copyBtn.classList.add("glance-success-state");
-        setTimeout(() => {
-          copyBtn.innerHTML = icon("copy");
-          copyBtn.classList.remove("glance-success-state");
-        }, 1500);
-      } catch (err) {
-        console.error("Copy failed", err);
-      }
-    });
-
-    const downloadBtn = document.createElement("button");
-    downloadBtn.className = "glance-btn glance-download-btn";
-    downloadBtn.innerHTML = icon("download");
-    downloadBtn.title = "Download Snip";
-    downloadBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const a = document.createElement("a");
-      a.href = image;
-      a.download = `snip_${Date.now()}.png`;
-      a.click();
-      downloadBtn.innerHTML = icon("check");
-      setTimeout(() => (downloadBtn.innerHTML = icon("download")), 1500);
-    });
-
-    const opacitySlider = document.createElement("input");
-    opacitySlider.type = "range";
-    opacitySlider.min = "0.1";
-    opacitySlider.max = "1";
-    opacitySlider.step = "0.1";
-    opacitySlider.value = "1";
-    opacitySlider.className = "glance-opacity-slider";
-    opacitySlider.title = "Adjust Opacity";
-    opacitySlider.addEventListener("input", (e) => {
-      widget.style.opacity = e.target.value;
-    });
-    // Prevent dragging when using slider
-    opacitySlider.addEventListener("mousedown", (e) => {
+    verticalMenu.addEventListener("click", (e) => {
+      const toolBtn = e.target.closest(".glance-v-btn");
+      if (!toolBtn) return;
+      const tool = toolBtn.dataset.tool;
+      if (tool === "copy") copyBtn.click();
+      if (tool === "save") saveBtn.click();
+      if (tool === "download") downloadBtn.click();
       e.stopPropagation();
     });
-
-    const saveBtn = document.createElement("button");
-    saveBtn.className = "glance-btn glance-save-btn";
-    saveBtn.innerHTML = icon("save");
-    saveBtn.title = "Save Snip";
-    saveBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      saveSnip(image);
-      saveBtn.innerHTML = icon("check");
-      saveBtn.classList.add("glance-bounce");
-      setTimeout(() => {
-        saveBtn.innerHTML = icon("save");
-        saveBtn.classList.remove("glance-bounce");
-      }, 1500);
-    });
-
-    const minBtn = document.createElement("button");
-    minBtn.className = "glance-btn glance-min-btn";
-    minBtn.innerHTML = icon("minimize");
-    minBtn.title = "Minimize";
-
-    const expandBtn = document.createElement("button");
-    expandBtn.className = "glance-btn glance-expand-btn";
-    expandBtn.innerHTML = icon("maximize");
-    expandBtn.title = "Expand";
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "glance-btn glance-close-btn";
@@ -513,8 +264,6 @@ if (!document.getElementById("glance-init-flag")) {
     closeBtn.title = "Close plugin";
     closeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-
-      // Update session storage when closing
       getActiveSnips((activeSnips) => {
         const remaining = activeSnips.filter(
           (s) => s.id !== widget.dataset.snipId,
@@ -526,74 +275,52 @@ if (!document.getElementById("glance-init-flag")) {
           });
         });
       });
-
       widget.classList.add("glance-widget-exit");
-      const removeWidget = () => {
-        widget.removeEventListener("transitionend", removeWidget);
-        const thumb = document.querySelector(
-          `.glance-widget-thumbnail[data-snip-id="${widget.dataset.snipId}"]`,
-        );
-        if (thumb) thumb.remove();
-        widget.remove();
-      };
-      widget.addEventListener("transitionend", removeWidget);
+      widget.remove();
     });
 
+    widget.appendChild(closeBtn);
+    widget.appendChild(verticalMenu);
+
+    // Filtered Action Bar (Hidden)
     const actionBar = document.createElement("div");
-    actionBar.className = "glance-widget-actionbar";
-    const annotateTriggerBtn = document.createElement("button");
-    annotateTriggerBtn.className = "glance-btn glance-annotate-trigger";
-    annotateTriggerBtn.innerHTML = icon("pen");
-    annotateTriggerBtn.title = "Annotate";
-    annotateTriggerBtn.addEventListener("click", (e) => {
+    actionBar.className = "glance-widget-actionbar h-hidden";
+    actionBar.setAttribute("style", "display: none !important;");
+    
+    // Hidden functionality triggers
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "glance-copy-btn h-hidden";
+    copyBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
-      drawBtn.click();
+      try {
+        const res = await fetch(image);
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        showToast("Copied to clipboard", "success");
+      } catch (err) { console.error(err); }
     });
-    const extractTriggerBtn = document.createElement("button");
-    extractTriggerBtn.className = "glance-btn glance-extract-trigger";
-    extractTriggerBtn.innerHTML = icon("text");
-    extractTriggerBtn.title = "Extract Text";
-    extractTriggerBtn.addEventListener("click", (e) => {
+
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "glance-save-btn h-hidden";
+    saveBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      textBtn.click();
+      saveSnip(image);
+      showToast("Saved to library", "success");
     });
-    const shareBtn = document.createElement("button");
-    shareBtn.className = "glance-btn glance-share-btn";
-    shareBtn.innerHTML = icon("share");
-    shareBtn.title = "Share";
-    const videoBtn = document.createElement("button");
-    videoBtn.className = "glance-btn glance-video-btn";
-    videoBtn.innerHTML = icon("video");
-    videoBtn.title = "Video Frame";
 
-    toolbarLeft.appendChild(dragHandle);
-    toolbarLeft.appendChild(titleEl);
-    toolbarRight.appendChild(minBtn);
-    toolbarRight.appendChild(expandBtn);
-    toolbarRight.appendChild(closeBtn);
-    toolbar.appendChild(toolbarLeft);
-    toolbar.appendChild(toolbarRight);
+    const downloadBtn = document.createElement("button");
+    downloadBtn.className = "glance-download-btn h-hidden";
+    downloadBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const a = document.createElement("a");
+      a.href = image;
+      a.download = `snip_${Date.now()}.png`;
+      a.click();
+    });
 
-    actionBar.appendChild(annotateTriggerBtn);
-    actionBar.appendChild(extractTriggerBtn);
-    actionBar.appendChild(copyBtn);
-    actionBar.appendChild(shareBtn);
-    actionBar.appendChild(videoBtn);
-    actionBar.appendChild(downloadBtn);
-    actionBar.appendChild(reframeBtn);
-    actionBar.appendChild(saveBtn);
-    actionBar.appendChild(opacitySlider);
-    actionBar.appendChild(colorPicker);
-
-    annotationSidebar.appendChild(drawBtn);
-    annotationSidebar.appendChild(markerBtn);
-    annotationSidebar.appendChild(textBtn);
-
-    widget.appendChild(toolbar);
-    widget.appendChild(actionBar);
-    widget.appendChild(annotationHeader);
-    widget.appendChild(annotationSidebar);
-    widget.appendChild(annotationOptions);
+    widget.appendChild(copyBtn);
+    widget.appendChild(saveBtn);
+    widget.appendChild(downloadBtn);
 
     const body = document.createElement("div");
     body.className = "glance-widget-body";
@@ -615,172 +342,33 @@ if (!document.getElementById("glance-init-flag")) {
     ctx.lineJoin = "round";
     ctx.lineWidth = 3;
 
-    strokeSlider.addEventListener("input", (e) => {
-      ctx.lineWidth = parseInt(e.target.value, 10);
-    });
-
-    undoBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const previous = drawHistory.pop();
-      if (!previous) return;
-      ctx.putImageData(previous, 0, 0);
-      saveWidgetState(widget);
-    });
-
-    doneBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      isDrawingMode = false;
-      isTextMode = false;
-      widget.classList.remove("drawing-mode");
-      widget.classList.remove("text-mode");
-      widget.classList.remove("annotation-mode");
-      drawBtn.style.background = "none";
-      textBtn.style.background = "none";
-      colorPicker.style.display = "none";
-      saveWidgetState(widget);
-    });
-
     canvas.addEventListener("mousedown", (e) => {
-      if (isTextMode) {
-        e.stopPropagation();
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const ta = document.createElement("textarea");
-        ta.className = "glance-text-note";
-        ta.style.position = "absolute";
-        ta.style.left = x + "px";
-        ta.style.top = y + "px";
-        ta.style.background = "rgba(255,255,255,0.8)";
-        ta.style.border = "1px dashed #333";
-        ta.style.padding = "4px";
-        ta.style.color = "#000";
-        ta.style.fontFamily = "sans-serif";
-        ta.style.fontSize = "14px";
-        ta.style.zIndex = "3";
-        ta.style.minWidth = "100px";
-        ta.style.minHeight = "40px";
-
-        // Auto-resize
-        ta.addEventListener("input", () => {
-          ta.style.height = "auto";
-          ta.style.height = ta.scrollHeight + "px";
-        });
-
-        // Make draggable by the textarea itself or allow typing
-        let isTaDragging = false;
-        let startTaX, startTaY, initLeft, initTop;
-        ta.addEventListener("mousedown", (te) => {
-          if (isTextMode) {
-            // In text mode, maybe we drag it
-            isTaDragging = true;
-            startTaX = te.clientX;
-            startTaY = te.clientY;
-            initLeft = parseFloat(ta.style.left) || 0;
-            initTop = parseFloat(ta.style.top) || 0;
-          }
-          te.stopPropagation();
-        });
-        document.addEventListener("mousemove", (te) => {
-          if (!isTaDragging) return;
-          ta.style.left = initLeft + (te.clientX - startTaX) + "px";
-          ta.style.top = initTop + (te.clientY - startTaY) + "px";
-        });
-        document.addEventListener("mouseup", () => (isTaDragging = false));
-
-        widget.appendChild(ta);
-        ta.focus();
-
-        // Turn off text mode after placing one
-        isTextMode = false;
-        textBtn.style.background = "none";
-        widget.classList.remove("text-mode");
-        return;
-      }
-
-      if (!isDrawingMode) return;
-      isPainting = true;
-      try {
-        drawHistory.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-      } catch (err) {
-        DBG("draw history capture failed:", err.message);
-      }
-      const rect = canvas.getBoundingClientRect();
-      lastX = e.clientX - rect.left;
-      lastY = e.clientY - rect.top;
+      // In minimal mode, we only allow dragging or tool interaction
+      if (e.target.closest(".glance-btn") || e.target.closest(".glance-vertical-tools")) return;
     });
 
     canvas.addEventListener("mousemove", (e) => {
-      if (!isDrawingMode || !isPainting) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      ctx.strokeStyle = currentColor;
-      ctx.beginPath();
-      ctx.moveTo(lastX, lastY);
-      ctx.lineTo(x, y);
-      ctx.stroke();
-
-      lastX = x;
-      lastY = y;
+      // No-op for now in minimal mode
     });
 
-    canvas.addEventListener("mouseup", () => (isPainting = false));
-    canvas.addEventListener("mouseleave", () => (isPainting = false));
+    canvas.addEventListener("mouseup", () => {
+       // No-op for now in minimal mode
+    });
+    canvas.addEventListener("mouseleave", () => {
+       // No-op for now in minimal mode
+    });
 
     document.body.appendChild(widget);
     requestAnimationFrame(() => {
       widget.classList.remove("glance-widget-entering");
       widget.classList.add("glance-widget-ready");
-      setTimeout(() => titleEl.classList.remove("glance-title-hidden"), 80);
     });
+
 
     if (drawing) {
       const dimg = new Image();
       dimg.onload = () => ctx.drawImage(dimg, 0, 0);
       dimg.src = drawing;
-    }
-
-    if (notes) {
-      notes.forEach((note) => {
-        const ta = document.createElement("textarea");
-        ta.className = "glance-text-note";
-        ta.style.position = "absolute";
-        ta.style.background = "rgba(255,255,255,0.8)";
-        ta.style.border = "1px dashed #333";
-        ta.style.padding = "4px";
-        ta.style.color = "#000";
-        ta.style.fontFamily = "sans-serif";
-        ta.style.fontSize = "14px";
-        ta.style.zIndex = "3";
-        ta.style.left = note.left;
-        ta.style.top = note.top;
-        ta.style.width = note.width;
-        ta.style.height = note.height;
-        ta.value = note.value;
-        widget.appendChild(ta);
-        ta.addEventListener("input", () => saveWidgetState(widget));
-        let isTaDragging = false;
-        let startTaX, startTaY, initLeft, initTop;
-        ta.addEventListener("mousedown", (te) => {
-          if (isTextMode) {
-            isTaDragging = true;
-            startTaX = te.clientX;
-            startTaY = te.clientY;
-            initLeft = parseFloat(ta.style.left) || 0;
-            initTop = parseFloat(ta.style.top) || 0;
-          }
-          te.stopPropagation();
-        });
-        document.addEventListener("mousemove", (te) => {
-          if (!isTaDragging) return;
-          ta.style.left = initLeft + (te.clientX - startTaX) + "px";
-          ta.style.top = initTop + (te.clientY - startTaY) + "px";
-        });
-        document.addEventListener("mouseup", () => (isTaDragging = false));
-      });
     }
 
     makeDraggable(widget);
@@ -925,7 +513,7 @@ if (!document.getElementById("glance-init-flag")) {
     // but the prompt for Feature 2 implies setting it now.
     getActiveSnips((activeSnips) => {
       let snips = activeSnips;
-      const index = snips.findIndex((s) => s.id === state.id);
+      const index = snips.findIndex(s => s.id === state.id || (s.image === state.image && s.timestamp === state.timestamp));
       if (index >= 0) {
         snips[index] = { ...snips[index], ...state };
       } else {
@@ -947,10 +535,10 @@ if (!document.getElementById("glance-init-flag")) {
 
     element.addEventListener("mousedown", (e) => {
       // Prevent dragging if clicking on UI elements
-      const isDragHandle = e.target.closest(".glance-drag-handle");
       if (
-        (e.target.closest(".glance-btn") && !isDragHandle) ||
+        e.target.closest(".glance-btn") ||
         e.target.closest(".glance-resize-handle") ||
+        e.target.closest(".glance-vertical-tools") ||
         element.classList.contains("drawing-mode")
       )
         return;
