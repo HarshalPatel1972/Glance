@@ -1,9 +1,9 @@
-const fs = require('fs');
-let c = fs.readFileSync('content.js', 'utf8');
+const fs = require("fs");
+let c = fs.readFileSync("content.js", "utf8");
 
 c = c.replace(
-`    const reframeBtn = document.createElement("button");`,
-`    const textBtn = document.createElement("button");
+  `    const reframeBtn = document.createElement("button");`,
+  `    const textBtn = document.createElement("button");
     textBtn.className = "glance-btn glance-text-btn";
     textBtn.innerHTML = "T";
     textBtn.title = "Add Text Note";
@@ -16,13 +16,13 @@ c = c.replace(
     });
     toolbar.appendChild(textBtn);
 
-    const reframeBtn = document.createElement("button");`
+    const reframeBtn = document.createElement("button");`,
 );
 
 c = c.replace(
-`    canvas.addEventListener('mousedown', (e) => {
+  `    canvas.addEventListener('mousedown', (e) => {
       if(!isDrawingMode) return;`,
-`    canvas.addEventListener('mousedown', (e) => {
+  `    canvas.addEventListener('mousedown', (e) => {
       if (isTextMode) {
         e.stopPropagation();
         const rect = canvas.getBoundingClientRect();
@@ -81,7 +81,7 @@ c = c.replace(
         return;
       }
 
-      if(!isDrawingMode) return;`
+      if(!isDrawingMode) return;`,
 );
 
-fs.writeFileSync('content.js', c);
+fs.writeFileSync("content.js", c);

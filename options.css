@@ -1,10 +1,19 @@
-@import url('./design-system.css');
+@import url("./design-system.css");
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-:where(button, input, textarea, select, a, [contenteditable="true"]):focus-visible {
+:where(
+  button,
+  input,
+  textarea,
+  select,
+  a,
+  [contenteditable="true"]
+):focus-visible {
   outline: 2px solid var(--g-coral);
   outline-offset: 3px;
 }
@@ -50,8 +59,9 @@ button {
   font-family: var(--font-text);
   font-weight: 600;
   font-size: 13px;
-  transition: filter var(--dur-fast) var(--ease-smooth),
-              transform var(--dur-fast) var(--ease-smooth);
+  transition:
+    filter var(--dur-fast) var(--ease-smooth),
+    transform var(--dur-fast) var(--ease-smooth);
   box-shadow: 0 2px 12px var(--g-coral-glow);
 }
 
@@ -88,8 +98,9 @@ a:hover {
   backdrop-filter: blur(20px);
   font-family: var(--font-text);
   font-size: 13px;
-  transition: opacity var(--dur-normal) var(--ease-smooth),
-              transform var(--dur-normal) var(--ease-smooth);
+  transition:
+    opacity var(--dur-normal) var(--ease-smooth),
+    transform var(--dur-normal) var(--ease-smooth);
 }
 
 #options-toast.show {
@@ -98,7 +109,9 @@ a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation: none !important;
     transition-property: opacity !important;
     transition-duration: 120ms !important;

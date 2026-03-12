@@ -1,9 +1,9 @@
-const fs = require('fs');
-let c = fs.readFileSync('content.js', 'utf8');
+const fs = require("fs");
+let c = fs.readFileSync("content.js", "utf8");
 
 c = c.replace(
-`    const drawBtn = document.createElement("button");`,
-`    const reframeBtn = document.createElement("button");
+  `    const drawBtn = document.createElement("button");`,
+  `    const reframeBtn = document.createElement("button");
     reframeBtn.className = "glance-btn glance-reframe-btn";
     reframeBtn.innerHTML = "⛶";
     reframeBtn.title = "Reframe Snip";
@@ -34,11 +34,11 @@ c = c.replace(
     });
 
     toolbar.appendChild(reframeBtn);
-    const drawBtn = document.createElement("button");`
+    const drawBtn = document.createElement("button");`,
 );
 
 c = c.replace(
-`  function captureSelection(left, top, width, height) {
+  `  function captureSelection(left, top, width, height) {
     // Send coordinates to background to capture
     chrome.runtime.sendMessage({
       action: "capture_area",
@@ -46,47 +46,47 @@ c = c.replace(
       devicePixelRatio: window.devicePixelRatio
     });
   }`,
-`  function captureSelection(left, top, width, height) {
+  `  function captureSelection(left, top, width, height) {
     chrome.runtime.sendMessage({
       action: "capture_area",
       area: { left, top, width, height },
       devicePixelRatio: window.devicePixelRatio,
       reframeId: window.glanceReframingTarget ? window.glanceReframingTarget.dataset.snipId : null
     });
-  }`
+  }`,
 );
 
 // We need background.js to reflect back reframeId
-let bg = fs.readFileSync('background.js', 'utf8');
+let bg = fs.readFileSync("background.js", "utf8");
 bg = bg.replace(
-`      chrome.tabs.sendMessage(sender.tab.id, {
+  `      chrome.tabs.sendMessage(sender.tab.id, {
         action: "crop_image",
         dataUrl: dataUrl,
         area: request.area,
         devicePixelRatio: request.devicePixelRatio
       });`,
-`      chrome.tabs.sendMessage(sender.tab.id, {
+  `      chrome.tabs.sendMessage(sender.tab.id, {
         action: "crop_image",
         dataUrl: dataUrl,
         area: request.area,
         devicePixelRatio: request.devicePixelRatio,
         reframeId: request.reframeId
-      });`
+      });`,
 );
-fs.writeFileSync('background.js', bg);
+fs.writeFileSync("background.js", bg);
 
 c = c.replace(
-`cropImage(request.dataUrl, request.area, request.devicePixelRatio);`,
-`cropImage(request.dataUrl, request.area, request.devicePixelRatio, request.reframeId);`
-);
-
-c = c.replace(
-`function cropImage(dataUrl, area, dpr) {`,
-`function cropImage(dataUrl, area, dpr, reframeId) {`
+  `cropImage(request.dataUrl, request.area, request.devicePixelRatio);`,
+  `cropImage(request.dataUrl, request.area, request.devicePixelRatio, request.reframeId);`,
 );
 
 c = c.replace(
-`        const croppedDataUrl = canvas.toDataURL('image/png');
+  `function cropImage(dataUrl, area, dpr) {`,
+  `function cropImage(dataUrl, area, dpr, reframeId) {`,
+);
+
+c = c.replace(
+  `        const croppedDataUrl = canvas.toDataURL('image/png');
         chrome.storage.session.get({ activeSnips: [] }, (result) => {
           createWidget({
             image: croppedDataUrl,
@@ -96,7 +96,7 @@ c = c.replace(
           });
         });
       };`,
-`        const croppedDataUrl = canvas.toDataURL('image/png');
+  `        const croppedDataUrl = canvas.toDataURL('image/png');
         if (reframeId) {
           const widget = document.querySelector(\`.glance-widget[data-snip-id="\${reframeId}"]\`);
           if (widget) {
@@ -131,12 +131,12 @@ c = c.replace(
             });
           });
         }
-      };`
+      };`,
 );
 
 // We should also abort reframing cleanly in `closeOverlay`
 c = c.replace(
-`  function closeOverlay() {
+  `  function closeOverlay() {
     isSnipping = false;
     document.removeEventListener("keydown", handleKeyDown);
     if (overlayContent && overlayContent.parentNode) {
@@ -145,7 +145,7 @@ c = c.replace(
       selectionBox = null;
     }
   }`,
-`  function closeOverlay() {
+  `  function closeOverlay() {
     isSnipping = false;
     document.removeEventListener("keydown", handleKeyDown);
     if (overlayContent && overlayContent.parentNode) {
@@ -158,7 +158,7 @@ c = c.replace(
       window.glanceReframingTarget.style.display = 'block';
       window.glanceReframingTarget = null;
     }
-  }`
+  }`,
 );
 
-fs.writeFileSync('content.js', c);
+fs.writeFileSync("content.js", c);
