@@ -146,15 +146,15 @@
 #glance-flash {
   position: fixed;
   inset: 0;
-  background: white;
+  background: radial-gradient(ellipse at center, rgba(255,143,171,0.55) 0%, rgba(255,107,107,0.35) 50%, transparent 80%);
   z-index: 2147483647;
-  opacity: 0.8;
+  opacity: 1;
   pointer-events: none;
-  animation: glance-flash-anim 0.2s ease-out;
+  animation: glance-flash-anim 0.28s var(--ease-out-expo);
 }
 
 @keyframes glance-flash-anim {
-  0%   { opacity: 0.8; }
+  0%   { opacity: 1; }
   100% { opacity: 0; }
 }
 
@@ -518,16 +518,23 @@
 /* Success / bounce state */
 .glance-success-state {
   color: var(--g-success) !important;
+  animation: glanceCopyFlash var(--dur-slow) var(--ease-out-expo);
+}
+
+@keyframes glanceCopyFlash {
+  0%   { color: var(--g-coral); transform: scale(1.18); filter: drop-shadow(0 0 6px var(--g-coral-glow)); }
+  60%  { color: var(--g-coral); transform: scale(1.05); filter: drop-shadow(0 0 3px var(--g-coral-glow)); }
+  100% { color: var(--g-success);  transform: scale(1);    filter: none; }
 }
 
 .glance-bounce {
-  animation: glance-save-bounce 300ms var(--ease-spring);
+  animation: glance-save-bounce var(--dur-normal) var(--ease-spring);
 }
 
 @keyframes glance-save-bounce {
   0%   { transform: scale(1); }
-  50%  { transform: scale(1.3); color: var(--g-coral); }
-  100% { transform: scale(1); }
+  45%  { transform: scale(1.32); color: var(--g-coral); filter: drop-shadow(0 0 8px var(--g-coral-glow)); }
+  100% { transform: scale(1);   filter: none; }
 }
 
 /* ── Drag Handle ── */
@@ -783,11 +790,6 @@
 .glance-color-swatch.selected {
   box-shadow: 0 0 0 2px #fff, 0 0 8px var(--g-coral-glow);
   transform: scale(1.15);
-}
-
-/* Success bounce for save button */
-.glance-success-state {
-  color: var(--g-success) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
