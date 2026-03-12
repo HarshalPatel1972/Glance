@@ -182,15 +182,30 @@
   border-radius: var(--r-pill);
   background: var(--g-overlay);
   border: 1px solid var(--g-rim);
-  box-shadow: var(--shadow-toast);
+  box-shadow: var(--shadow-toast),
+              inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
   color: var(--g-text-bright);
   font: 450 13px var(--font-text);
   opacity: 0;
   transform: translateY(16px);
   transition: transform var(--dur-normal) var(--ease-spring),
-              opacity var(--dur-normal) var(--ease-smooth);
+              opacity var(--dur-normal) var(--ease-smooth),
+              scale var(--dur-normal) var(--ease-smooth);
   pointer-events: none;
   position: relative;
+  white-space: nowrap;
+}
+
+/* Depth stack: older toasts recede when multiple are visible */
+#glance-toast-stack .glance-toast.show:not(:last-child) {
+  transform: scale(0.96) translateY(2px);
+  opacity: 0.75;
+}
+
+#glance-toast-stack .glance-toast.show:nth-last-child(n+3) {
+  transform: scale(0.92) translateY(4px);
+  opacity: 0.55;
 }
 
 .glance-toast::before {
