@@ -22,16 +22,33 @@
   user-select: none;
   opacity: 0;
   animation: glance-overlay-in var(--dur-fast) var(--ease-smooth) forwards;
-  cursor: crosshair;
+  /* Custom SVG crosshair: thin white lines + coral center dot */
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cline x1='12' y1='0' x2='12' y2='10' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='12' y1='14' x2='12' y2='24' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='0' y1='12' x2='10' y2='12' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Cline x1='14' y1='12' x2='24' y2='12' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='2.5' fill='%23FF6B6B'/%3E%3C/svg%3E") 12 12, crosshair;
 }
 
 #glance-selection-box {
   position: absolute;
-  border: 2px solid var(--g-coral);
+  border: 2px solid transparent;
   background: var(--g-coral-subtle);
   display: none;
   pointer-events: none;
   box-sizing: border-box;
+}
+
+/* Gradient border via pseudo-element */
+#glance-selection-box::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 2px;
+  background: var(--g-grad-coral);
+  z-index: -1;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 2px;
 }
 
 .glance-overlay-mask {
@@ -45,6 +62,9 @@
   top: 18px;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--g-text-mid);
   font-family: var(--font-text);
   font-size: 13px;
@@ -53,14 +73,22 @@
   background: var(--g-overlay);
   border: 1px solid var(--g-rim);
   border-radius: var(--r-pill);
+  box-shadow: var(--shadow-toast);
+  backdrop-filter: blur(20px);
+  white-space: nowrap;
 }
 
 #glance-instruction-label span {
-  margin-left: 8px;
-  opacity: 0.8;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  background: var(--g-raised);
+  border: 1px solid var(--g-rim);
+  border-radius: var(--r-xs);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--g-text-dim);
+  letter-spacing: 0.02em;
 }
 
 #glance-dimension-pill {
@@ -69,13 +97,15 @@
   padding: 5px 12px;
   border-radius: var(--r-pill);
   background: var(--g-overlay);
-  color: var(--g-text-mid);
+  color: var(--g-text-coral);
   border: 1px solid var(--g-rim);
   box-shadow: var(--shadow-toast);
   font-family: var(--font-mono);
   font-size: 11px;
   pointer-events: none;
   z-index: 2147483643;
+  backdrop-filter: blur(20px);
+  letter-spacing: 0.04em;
 }
 
 .glance-corner {
