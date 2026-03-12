@@ -1,35 +1,70 @@
 :root {
-  --glance-bg: #0E0E10;
-  --glance-surface: #1A1A1F;
-  --glance-surface-hover: #23232B;
-  --glance-border: #2A2A32;
-  --glance-border-hover: #3E3E4E;
-  --glance-accent: #5B6EF5;
-  --glance-accent-glow: rgba(91, 110, 245, 0.25);
-  --glance-accent-hover: #6F80FF;
-  --glance-text-primary: #F0F0F5;
-  --glance-text-secondary: #8A8A9E;
-  --glance-text-disabled: #44445A;
-  --glance-danger: #FF4D6D;
-  --glance-success: #3DDC84;
-  --glance-warning: #FFB347;
+  /* ── Core Palette ── */
+  --g-void:         #080809;
+  --g-base:         #0F0F12;
+  --g-raised:       #161619;
+  --g-overlay:      #1E1E24;
+  --g-rim:          #2C2C36;
+  --g-rim-soft:     rgba(255,255,255,0.06);
 
-  --glance-glass: rgba(26, 26, 31, 0.88);
-  --glance-glass-border: rgba(255, 255, 255, 0.07);
+  /* ── Coral / Rose Accent System ── */
+  --g-coral:        #FF6B6B;
+  --g-rose:         #FF8FAB;
+  --g-blush:        #FFB3C6;
+  --g-coral-deep:   #E0504F;
+  --g-coral-glow:   rgba(255,107,107,0.18);
+  --g-coral-subtle: rgba(255,107,107,0.08);
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  /* ── Gradient Library ── */
+  --g-grad-coral:   linear-gradient(135deg, #FF6B6B 0%, #FF8FAB 100%);
+  --g-grad-warm:    linear-gradient(135deg, #FF8FAB 0%, #FFB3C6 50%, #FFDDE6 100%);
+  --g-grad-surface: linear-gradient(160deg, #1A1A20 0%, #12121A 100%);
+  --g-grad-glass:   linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%);
+  --g-grad-toolbar: linear-gradient(180deg, rgba(22,22,26,0.98) 0%, rgba(18,18,22,0.95) 100%);
 
-  --shadow-widget: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-toolbar: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-accent: 0 0 16px var(--glance-accent-glow);
+  /* ── Text ── */
+  --g-text-bright:  #F5F0F0;
+  --g-text-mid:     #9E9AA8;
+  --g-text-dim:     #4E4A58;
+  --g-text-coral:   #FF8FAB;
 
-  --font-ui: 'SF Pro Display', 'Segoe UI Variable', system-ui, sans-serif;
-  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  /* ── Semantic ── */
+  --g-success:      #4ECBA0;
+  --g-warning:      #F5A623;
+  --g-danger:       #FF5F70;
 
-  --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-smooth: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* ── Radii ── */
+  --r-xs:   5px;
+  --r-sm:   8px;
+  --r-md:   12px;
+  --r-lg:   16px;
+  --r-xl:   22px;
+  --r-2xl:  28px;
+  --r-pill: 999px;
+
+  /* ── Depth / Shadow System ── */
+  --shadow-float:   0 24px 64px rgba(0,0,0,0.7),
+                    0 8px 24px rgba(0,0,0,0.5),
+                    0 2px 6px rgba(0,0,0,0.4);
+  --shadow-glow:    0 0 24px var(--g-coral-glow),
+                    0 0 48px rgba(255,107,107,0.08);
+  --shadow-inset:   inset 0 1px 0 rgba(255,255,255,0.07),
+                    inset 0 -1px 0 rgba(0,0,0,0.3);
+  --shadow-toolbar: 0 4px 20px rgba(0,0,0,0.6);
+  --shadow-toast:   0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+
+  /* ── Typography ── */
+  --font-display: 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
+  --font-text:    'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
+  --font-mono:    'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* ── Motion ── */
+  --ease-out-expo:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth:     cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-instant:     80ms;
+  --dur-fast:        150ms;
+  --dur-normal:      250ms;
+  --dur-slow:        400ms;
+  --dur-spring:      500ms;
 }
