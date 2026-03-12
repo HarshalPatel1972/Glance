@@ -934,6 +934,12 @@
               box-shadow var(--dur-fast) var(--ease-spring),
               transform var(--dur-fast) var(--ease-spring);
   overflow: visible;
+  animation: thumbAppear var(--dur-normal) var(--ease-spring) both;
+}
+
+@keyframes thumbAppear {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .glance-widget-thumbnail::after {
@@ -973,7 +979,7 @@
   position: absolute;
   left: 50%;
   bottom: calc(100% + 8px);
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(4px);
   background: var(--g-overlay);
   border: 1px solid var(--g-rim);
   border-radius: var(--r-pill);
@@ -985,11 +991,13 @@
   font: 11px var(--font-text);
   box-shadow: var(--shadow-toast);
   backdrop-filter: blur(20px);
-  transition: opacity var(--dur-fast) var(--ease-smooth);
+  transition: opacity var(--dur-fast) var(--ease-smooth),
+              transform var(--dur-fast) var(--ease-smooth);
 }
 
 .glance-widget-thumbnail:hover .glance-thumb-tooltip {
   opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1017,7 +1025,8 @@
   .glance-title-hidden,
   .glance-snip-title:not(.glance-title-hidden),
   .glance-close-btn .glance-icon,
-  .glance-widget.glance-dragging .glance-widget-toolbar::after {
+  .glance-widget.glance-dragging .glance-widget-toolbar::after,
+  .glance-thumb-tooltip {
     transform: none !important;
   }
 
