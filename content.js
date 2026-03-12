@@ -355,10 +355,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       isReframeMode = !isReframeMode;
       if (isReframeMode) {
         widget.classList.remove('no-reframe');
-        reframeBtn.style.background = 'none';
+        reframeBtn.style.opacity = '1';
       } else {
         widget.classList.add('no-reframe');
-        reframeBtn.style.background = 'rgba(0,0,0,0.2)';
+        reframeBtn.style.opacity = '0.5';
       }
     });
 
